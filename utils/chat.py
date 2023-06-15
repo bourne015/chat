@@ -9,7 +9,7 @@ class Chat:
     '''
     def __init__(self) -> None:
         #self.chat_list = []
-        self.model = "gpt-3.5-turbo"
+        self.model = "gpt-3.5-turbo-16k-0613"
         openai.api_key = settings.openai_key
         print("Chat init: ", self.model)
 
