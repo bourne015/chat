@@ -13,25 +13,27 @@ class Chat:
         openai.api_key = settings.openai_key
         print("Chat init: ", self.model)
 
-    def ask(self, prompt_list):
+    def ask(self, prompt_list, stream = False):
         '''
         question without context
         '''
         res = openai.ChatCompletion.create(
             model=self.model,
-            messages=[{"role": "user", "content": question}]
+            messages=[{"role": "user", "content": question}],
+            stream=stream
         )
 
         return res
 
-    def asks(self, prompt_list):
+    def asks(self, prompt_list, stream = False):
         '''
         question with context
         prompt_list store a session of prompts and answers
         '''
         res = openai.ChatCompletion.create(
             model=self.model,
-            messages=prompt_list
+            messages=prompt_list,
+            stream=stream
         )
 
         return res
