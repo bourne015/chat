@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Dict
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -11,9 +11,9 @@ from utils import chat
 
 router = APIRouter()
 
-class Question(BaseModel):
-    role: str
-    content: str
+class Reqdata(BaseModel):
+    model: str
+    question: List
 
 
 @router.post("/chat", name="chat")
@@ -21,7 +21,7 @@ async def ask(question: List) -> Any:
     """
     """
     #print("chat len:", len(question))
-    #print("Q:", question[-1]["content"])
+    print("Q:", question[-1]["content"])
     try:
         answer = chat.asks(question)
     except Exception as e:
@@ -31,10 +31,12 @@ async def ask(question: List) -> Any:
     return JSONResponse(status_code=200, content=answer)
 
 @router.post("/stream/chat", name="stream chat")
-async def ask_stream(question: List) -> Any:
+async def ask_stream(data: Reqdata) -> Any:
     """
     server sent event
     """
+    model = data.model
+    question = data.question
     # print("Q:", question[-1]["content"])
     def event_generator():
         answer = chat.asks(question, stream = True)
