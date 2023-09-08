@@ -1,4 +1,5 @@
 import openai
+from retry import retry
 
 from core import settings
 
@@ -13,6 +14,7 @@ class Chat:
         openai.api_key = settings.openai_key
         print("Chat init: ", self.model)
 
+    @retry(tries=3, delay=1, backoff=1)
     def ask(self, prompt_list, stream = False):
         '''
         question without context
@@ -20,11 +22,13 @@ class Chat:
         res = openai.ChatCompletion.create(
             model=self.model,
             messages=[{"role": "user", "content": question}],
+            request_timeout=15,
             stream=stream
         )
 
         return res
 
+    @retry(tries=3, delay=1, backoff=1)
     def asks(self, prompt_list, stream = False):
         '''
         question with context
@@ -33,6 +37,7 @@ class Chat:
         res = openai.ChatCompletion.create(
             model=self.model,
             messages=prompt_list,
+            request_timeout=15,
             stream=stream
         )
 

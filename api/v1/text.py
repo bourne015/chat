@@ -39,7 +39,10 @@ async def ask_stream(data: Reqdata) -> Any:
     question = data.question
     # print("Q:", question[-1]["content"])
     def event_generator():
-        answer = chat.asks(question, stream = True)
+        try:
+            answer = chat.asks(question, stream = True)
+        except Exception as err:
+            yield err
         for text in answer:
             cont = text['choices'][0].get('delta' ,None).get('content', None)
             if cont:
