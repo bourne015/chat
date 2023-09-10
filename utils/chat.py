@@ -20,7 +20,11 @@ class Chat:
         print("Chat init: ", self.model)
 
     @retry(tries=3, delay=1, backoff=1)
-    def ask(self, prompt_list, model, stream = False):
+    def ask(
+            self,
+            question,
+            model = "gpt-3.5-turbo-16k",
+            stream = False):
         '''
         question without context
         '''
@@ -39,7 +43,11 @@ class Chat:
         return res
 
     @retry(tries=3, delay=1, backoff=1)
-    def asks(self, prompt_list, model, stream = False):
+    def asks(
+            self,
+            prompt_list,
+            model = "gpt-3.5-turbo-16k",
+            stream = False):
         '''
         question with context
         prompt_list store a session of prompts and answers
@@ -57,19 +65,4 @@ class Chat:
         )
 
         return res
-
-'''
-    def ask(self, prompt: str) -> str:
-        self.chat_list.append({"role": "user", "content": prompt})
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=self.chat_list
-        )
-        answer = response.choices[0].message['content']
-        self.chat_list.append(
-            {"role": "assistant", "content": answer}
-        )
-        print("chat len:", len(self.chat_list))
-        return answer
-'''
 
