@@ -12,22 +12,25 @@ from utils import chat
 
 router = APIRouter()
 
-class Reqdata(BaseModel):
+class ModelPrompts(BaseModel):
     model: str
     question: List
 
 
+class ModelPrompt(BaseModel):
+    model: str
+    question: str
+
 @router.post("/chat", name="chat")
-async def ask(data: Reqdata) -> Any:
+async def ask(data: ModelPrompt) -> Any:
     """
+    a single question
     """
-    #print("chat len:", len(question))
-    #print("Q:", question[-1]["content"])
     model = data.model
     question = data.question
-    # print(f"model: {model}, Q: {question[-1]['content']}")
+    # print(f"model: {model}, Q: {question}")
     try:
-        answer = chat.asks(question, model)
+        answer = chat.ask(question, model)
     except Exception as e:
         print("err:", e)
         return JSONResponse(status_code=500, content=str(e))
@@ -35,7 +38,7 @@ async def ask(data: Reqdata) -> Any:
     return JSONResponse(status_code=200, content=answer)
 
 @router.post("/stream/chat", name="stream chat")
-async def ask_stream(data: Reqdata) -> Any:
+async def ask_stream(data: ModelPrompts) -> Any:
     """
     server sent event
     """
