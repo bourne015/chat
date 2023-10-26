@@ -8,9 +8,11 @@ import json
 import asyncio
 
 from utils import chat
+from utils import log
 
 
 router = APIRouter()
+log = log.Logger(__name__, clevel=log.logging.WARNING)
 
 class ModelPrompts(BaseModel):
     model: str
@@ -28,11 +30,11 @@ async def ask(data: ModelPrompt) -> Any:
     """
     model = data.model
     question = data.question
-    # print(f"model: {model}, Q: {question}")
+    log.debug(f"model: {model}, Q: {question}")
     try:
         answer = chat.ask(question, model)
     except Exception as e:
-        print("err:", e)
+        log.error(f"err: {e}")
         return JSONResponse(status_code=500, content=str(e))
 
     return JSONResponse(status_code=200, content=answer)
@@ -44,7 +46,7 @@ async def ask_stream(data: ModelPrompts) -> Any:
     """
     model = data.model
     question = data.question
-    # print(f"model: {model}, Q: {question[-1]['content']}")
+    log.debug(f"model: {model}, Q: {question[-1]['content']}")
     async def event_generator():
         try:
             answer = chat.asks(question, model, stream = True)
