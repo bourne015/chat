@@ -12,7 +12,7 @@ from utils import log
 
 
 router = APIRouter()
-log = log.Logger(__name__, clevel=log.logging.WARNING)
+log = log.Logger(__name__, clevel=log.logging.DEBUG)
 
 class ModelPrompts(BaseModel):
     model: str
@@ -36,8 +36,10 @@ async def ask(data: ModelPrompt) -> Any:
     except Exception as e:
         log.error(f"err: {e}")
         return JSONResponse(status_code=500, content=str(e))
-
-    return JSONResponse(status_code=200, content=answer)
+    return JSONResponse(
+            status_code=200,
+            content=answer.choices[0].message.content
+            )
 
 @router.post("/stream/chat", name="stream chat")
 async def ask_stream(data: ModelPrompts) -> Any:
@@ -46,18 +48,38 @@ async def ask_stream(data: ModelPrompts) -> Any:
     """
     model = data.model
     question = data.question
-    log.debug(f"model: {model}, Q: {question[-1]['content']}")
+    #log.debug("test:", {model}, {question[-1]['content']})
+    log.debug(f"stream:, {model}")
     async def event_generator():
         try:
             answer = chat.asks(question, model, stream = True)
+            for text in answer:
+                cont = text.choices[0].delta.content
+                if cont:
+                    yield cont
+                    #await asyncio.sleep(0.01)
         except Exception as err:
+            log.debug(err)
             yield err
-        for text in answer:
-            cont = text['choices'][0].get('delta' ,None).get('content', None)
-            if cont:
-                yield cont
-                await asyncio.sleep(0.01)
-
     return EventSourceResponse(event_generator())
     #return  StreamingResponse(event_generator(), media_type="text/event-stream")
 
+@router.post("/image", name="image")
+async def image(data: ModelPrompt) -> Any:
+    """
+    generate image
+    """
+    model = data.model
+    question = data.question
+    log.debug(f"image model: {model}, Q: {question}")
+    #log.debug(f"image model: {model}")
+    try:
+        answer = chat.gen_image(question, model)
+    except Exception as e:
+        log.error(f"err: {e}")
+        return JSONResponse(status_code=500, content=str(e))
+    return JSONResponse(
+            status_code=200,
+            content=answer.data[0].b64_json
+            #content=answer.data[0].url
+            )
