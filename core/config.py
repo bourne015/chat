@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "mychat"
     ORIGINS = ["*", ]
     openai_key: str
+    claude_key: str
 
     class Config:
         env_file = '.env'

@@ -48,16 +48,17 @@ async def ask_stream(data: ModelPrompts) -> Any:
     """
     model = data.model
     question = data.question
-    #log.debug("test:", {model}, {question[-1]['content']})
-    log.debug(f"stream:, {model}")
+    if model == "gpt-4-vision-preview":
+        log.debug(f"stream: {model}, Q: {question[-1]['content'][0]['text']}")
+    else:
+        log.debug(f"stream: {model}, Q: {question[-1]['content']}")
     async def event_generator():
         try:
             answer = chat.asks(question, model, stream = True)
             for text in answer:
-                cont = text.choices[0].delta.content
-                if cont:
-                    yield cont
-                    #await asyncio.sleep(0.01)
+                if text:
+                    yield text
+                #await asyncio.sleep(0.01)
         except Exception as err:
             log.debug(err)
             yield err

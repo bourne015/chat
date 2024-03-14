@@ -7,7 +7,7 @@ from utils import log
 
 log = log.Logger(__name__, clevel=log.logging.DEBUG)
 
-class Chat:
+class GPT:
     '''
     wrapper openai api
     '''
@@ -19,38 +19,28 @@ class Chat:
     ]
 
     def __init__(self) -> None:
-        #self.chat_list = []
         self.model = self.supported_models[0]
         self.client = OpenAI(api_key=settings.openai_key)
-        #openai.api_key = settings.openai_key
         print("Chat init: ", self.model)
 
     @retry(tries=3, delay=1, backoff=1)
-    def ask(
-            self,
-            question,
-            model = "gpt-3.5-turbo-16k",
-            stream = False):
+    def ask(self, question, model, stream = False):
         '''
         question without context
         '''
         if model not in self.supported_models:
             model = self.supported_models[0]
 
-        res = self.client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": question}],
             stream=stream
         )
 
-        return res
+        return response
 
     @retry(tries=3, delay=1, backoff=1)
-    def asks(
-            self,
-            prompt_list,
-            model = "gpt-3.5-turbo-16k",
-            stream = False):
+    def asks(self, prompt_list, model, stream = True):
         '''
         question with context
         prompt_list store a session of prompts and answers
@@ -58,21 +48,21 @@ class Chat:
         if model not in self.supported_models:
             model = self.supported_models[1]
 
-        res = self.client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model=model,
             messages=prompt_list,
             max_tokens=4096,
             stream=stream
-
         )
+        for chunk in response:
+            chunk_message = chunk.choices[0].delta.content
+            yield chunk_message
 
-        return res
-
-    def gen_image(
-            self,
-            prompt,
-            model = 'dall-e-3'):
-        res = self.client.images.generate(
+    def gen_image(self, prompt, model = 'dall-e-3'):
+        """
+        generate image
+        """
+        response = self.client.images.generate(
             model=model,
             prompt=prompt,
             size="1024x1024",
@@ -81,5 +71,4 @@ class Chat:
             n=1,
             )
 
-        return res
-
+        return response

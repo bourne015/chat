@@ -1,3 +1,3 @@
-from .chat import Chat
+from .chats import Chat
 
 chat = Chat()
