@@ -48,10 +48,11 @@ async def ask_stream(data: ModelPrompts) -> Any:
     """
     model = data.model
     question = data.question
-    if model == "gpt-4-vision-preview":
-        log.debug(f"stream: {model}, Q: {question[-1]['content'][0]['text']}")
-    else:
-        log.debug(f"stream: {model}, Q: {question[-1]['content']}")
+    content = question[-1].get('content') if question else None
+    if type(content) == str:
+        log.debug(f"stream: {model}, Q: {content}")
+    elif type(content) == list:
+        log.debug(f"stream: {model}, Q: {content[0].get('text')}")
     async def event_generator():
         try:
             answer = chat.asks(question, model, stream = True)
