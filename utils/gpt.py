@@ -37,7 +37,7 @@ class GPT:
             stream=stream
         )
 
-        return response
+        return response.choices[0].message.content
 
     @retry(tries=3, delay=1, backoff=1)
     def asks(self, prompt_list, model, stream = True):

@@ -32,11 +32,12 @@ class Claude:
 
         response = self.client.messages.create(
             model=model,
+            max_tokens=4096,
             messages=[{"role": "user", "content": prompt}],
             stream=stream
         )
 
-        return response
+        return response.content[0].text
 
     @retry(tries=3, delay=1, backoff=1)
     def asks(self, prompt_list, model, stream = True):

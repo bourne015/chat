@@ -38,7 +38,7 @@ async def ask(data: ModelPrompt) -> Any:
         return JSONResponse(status_code=500, content=str(e))
     return JSONResponse(
             status_code=200,
-            content=answer.choices[0].message.content
+            content=answer
             )
 
 @router.post("/stream/chat", name="stream chat")
