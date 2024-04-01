@@ -29,15 +29,17 @@ class UserDBConnectorComponent(DBConnectorComponent):
         def thd(conn):
             try:
                 if kwargs.get("email", None) is None:
-                    raise ValueError("request_id is required field")
+                    raise ValueError("email is required field")
                 if kwargs.get("pwd", None) is None:
-                    raise ValueError("number is required field")
+                    raise ValueError("pwd is required field")
                 user = self.tbl(
                     name=kwargs.get("name", None),
                     email=kwargs.get("email"),
                     phone=kwargs.get("phone", None),
                     avatar=kwargs.get("avatar", "1"),
                     pwd=kwargs.get("pwd"),
+                    created_at=kwargs.get("created_at"),
+                    updated_at=kwargs.get("updated_at"),
                     active=True
                 )
                 conn.add(user)
@@ -52,6 +54,7 @@ class UserDBConnectorComponent(DBConnectorComponent):
         def thd(conn):
             update_columns = [
                 "name", "email", "phone", "avatar", "pwd",
+                "created_at", "updated_at"
             ]
             user = conn.query(self.tbl).filter(
                 self.tbl.id == user_id).first()

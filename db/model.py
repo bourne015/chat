@@ -27,6 +27,8 @@ class User(Base):
     phone = Column(String(20), comment="phone number")
     avatar = Column(String, comment="user avatar")
     pwd = Column(String(200), comment="password", nullable=False)
+    created_at = Column(Integer(), default=None)
+    updated_at = Column(Integer(), default=None)
     active = Column(Boolean(), comment="whether the user is active")
 
 
@@ -39,3 +41,6 @@ class Chat(Base):
     user_id = Column(Integer(), ForeignKey(User.id), nullable=False)
     title = Column(String(50), comment="this chat title")
     contents = Column(JSON(), comment="chat content of this title")
+    model = Column(String(50), comment="chat model")
+    created_at = Column(Integer(), default=None)
+    updated_at = Column(Integer(), default=None)

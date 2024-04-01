@@ -1,3 +1,4 @@
+import time
 from typing import Any, List, Dict, Optional, Annotated
 from fastapi import APIRouter, Path, Body, Depends
 from fastapi.responses import JSONResponse
@@ -27,18 +28,25 @@ class UserData(BaseModel):
 @router.post("/user", name="add user")
 async def user_new(user: UserData) -> Any:
     try:
+        olduser = db_client.user.get_user_by_email(user.name)
+        if olduser:
+            return JSONResponse(status_code=400, content={"result": "user already exists"})
         hash_pwd = get_password_hash(user.pwd)
+        created_at = int(time.time())
+        updated_at = int(time.time())
         user_id = db_client.user.add_new_user(
             name=user.name,
             email=user.email,
             phone=user.phone,
             avatar=user.avatar,
             pwd=hash_pwd,
+            created_at=created_at,
+            updated_at=updated_at,
             )
     except Exception as err:
         log.debug(f"add user error:{err}")
-        return JSONResponse(status_code=500, content=str(e))
-    return JSONResponse(status_code=200, content={"id":user_id})
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    return JSONResponse(status_code=200, content={"result": "success", "id":user_id})
 
 
 @router.post("/user/login", name="get user by mail")
@@ -76,15 +84,16 @@ async def user_edit(user_id: int, user: UserData) -> Any:
         if user.phone:
             new_data["phone"] = user.phone
         if user.avatar:
-            new_data["avatar"] = user.avatar       
+            new_data["avatar"] = user.avatar
+        new_data["updated_at"] = int(time.time())       
         user = db_client.user.update_user_by_id(
             user_id,
             **new_data,
             )
     except Exception as err:
         log.debug(f"edit user error:{err}")
-        return JSONResponse(status_code=500, content=str(err))
-    return JSONResponse(status_code=200, content=str(f"edited user"))
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    return JSONResponse(status_code=200, content={"result": "success"})
 
 
 @router.delete("/user/", name="delete user")
@@ -95,5 +104,5 @@ async def user_delete(id: int) -> Any:
             )
     except Exception as err:
         log.debug(f"delete user error:{err}")
-        return JSONResponse(status_code=500, content=str(err))
-    return JSONResponse(status_code=200, content=str(f"deleted user_id:{id}"))
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    return JSONResponse(status_code=200, content={"result": "success"})

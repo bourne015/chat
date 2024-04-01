@@ -11,9 +11,12 @@ class ChatDBConnectorComponent(DBConnectorComponent):
 
     def get_chat_by_user_id(self, user_id):
         def thd(conn):
-            chat = conn.query(self.tbl).filter(
-                self.tbl.user_id == user_id).all()
-            return chat.to_dict() if chat else None
+            try:
+                chats = conn.query(self.tbl).filter(
+                    self.tbl.user_id == user_id).all()
+            except Exception as err:
+                print(f"get chats err: {err}")
+            return [chat.to_dict() for chat in chats]
         d = self.db.execute(thd)
         return d
 
@@ -27,14 +30,21 @@ class ChatDBConnectorComponent(DBConnectorComponent):
 
     def add_new_chat(self, **kwargs):
         def thd(conn):
-            if kwargs.get("user_id", None) is None:
-                raise ValueError("user_id is required field")
-            chat = self.tbl(
-                user_id=kwargs.get("user_id"),
-                content=kwargs.get("content"),
-            )
-            conn.add(chat)
-            conn.commit()
+            try:
+                if kwargs.get("user_id", None) is None:
+                    raise ValueError("user_id is required field")
+                chat = self.tbl(
+                    user_id=kwargs.get("user_id"),
+                    title=kwargs.get("title", "0"),
+                    contents=kwargs.get("contents"),
+                    model=kwargs.get("model"),
+                    created_at=kwargs.get("created_at"),
+                    updated_at=kwargs.get("updated_at"),
+                )
+                conn.add(chat)
+                conn.commit()
+            except Exception as err:
+                print("add chat err: ", err)
             return chat.id
         d = self.db.execute(thd)
         return d
@@ -42,7 +52,7 @@ class ChatDBConnectorComponent(DBConnectorComponent):
     def update_chat_by_id(self, chat_id, **kwargs):
         def thd(conn):
             update_columns = [
-                "title", "content",
+                "title", "contents", "model", "created_at", "updated_at",
             ]
             chat = conn.query(self.tbl).filter(
                 self.tbl.id == chat_id).first()
@@ -52,7 +62,7 @@ class ChatDBConnectorComponent(DBConnectorComponent):
                     setattr(chat, col, val)
                     flag_modified(chat, col)
             conn.commit()
-            return chat.to_dict()
+            return chat.id #chat.to_dict()
         d = self.db.execute(thd)
         return d
 
