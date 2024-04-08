@@ -28,9 +28,9 @@ class UserData(BaseModel):
 @router.post("/user", name="add user")
 async def user_new(user: UserData) -> Any:
     try:
-        olduser = db_client.user.get_user_by_email(user.name)
+        olduser = db_client.user.get_user_by_email(user.email)
         if olduser:
-            return JSONResponse(status_code=400, content={"result": "user already exists"})
+            return JSONResponse(status_code=200, content={"result": "user already exists"})
         hash_pwd = get_password_hash(user.pwd)
         created_at = int(time.time())
         updated_at = int(time.time())
