@@ -13,6 +13,11 @@ router = APIRouter()
 log = log.Logger(__name__, clevel=log.logging.DEBUG)
 
 
+class UpdatePassword(BaseModel):
+    current_password: str
+    new_password: str
+
+
 class UserData(BaseModel):
     '''
     Data structure for User
@@ -92,6 +97,25 @@ async def user_edit(user_id: int, user: UserData) -> Any:
             )
     except Exception as err:
         log.debug(f"edit user error:{err}")
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    return JSONResponse(status_code=200, content={"result": "success"})
+
+
+@router.post("/user/{user_id}/security", name="change user password")
+async def user_chgpwd(user_id: int, form_data: UpdatePassword) -> Any:
+    try:
+        new_data = {}
+        dbuser = db_client.user.get_user_by_id(user_id)
+        if not verify_password(form_data.current_password, dbuser.pwd):
+            return JSONResponse(status_code=200, content={"result": "wrong password"})
+        new_data["pwd"] = get_password_hash(form_data.new_password)
+        new_data["updated_at"] = int(time.time())
+        user = db_client.user.update_user_by_id(
+            user_id,
+            **new_data,
+            )
+    except Exception as err:
+        log.debug(f"change user pwd error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
     return JSONResponse(status_code=200, content={"result": "success"})
 
