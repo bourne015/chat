@@ -11,8 +11,11 @@ class UserDBConnectorComponent(DBConnectorComponent):
 
     def get_user_by_email(self, email):
         def thd(conn):
-            user = conn.query(self.tbl).filter(
-                self.tbl.email == email).first()
+            try:
+                user = conn.query(self.tbl).filter(
+                    self.tbl.email == email).first()
+            except Exception as err:
+                print(f"get user err: {err}")
             return user.to_dict() if user else None
         d = self.db.execute(thd)
         return d
@@ -40,6 +43,7 @@ class UserDBConnectorComponent(DBConnectorComponent):
                     pwd=kwargs.get("pwd"),
                     created_at=kwargs.get("created_at"),
                     updated_at=kwargs.get("updated_at"),
+                    credit=0.0,
                     active=True
                 )
                 conn.add(user)
@@ -54,7 +58,7 @@ class UserDBConnectorComponent(DBConnectorComponent):
         def thd(conn):
             update_columns = [
                 "name", "email", "phone", "avatar", "pwd",
-                "created_at", "updated_at"
+                "created_at", "updated_at", "credit",
             ]
             user = conn.query(self.tbl).filter(
                 self.tbl.id == user_id).first()

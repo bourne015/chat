@@ -3,7 +3,7 @@ import time
 
 from dictns import Namespace
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer, SmallInteger, ForeignKey, JSON, Boolean, Text
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, JSON, Boolean, Text
 
 
 Base = declarative_base()
@@ -29,6 +29,7 @@ class User(Base):
     pwd = Column(String(200), comment="password", nullable=False)
     created_at = Column(Integer(), default=None)
     updated_at = Column(Integer(), default=None)
+    credit = Column(Float(), comment="credit balance", default=0.0)
     active = Column(Boolean(), comment="whether the user is active")
 
 
