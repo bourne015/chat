@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from utils import log
+from utils import chat as chatlib
 from api.deps import db_client
 
 router = APIRouter()
@@ -16,6 +17,7 @@ class chatData(BaseModel):
     Data structure for User
     '''
     id: Optional[int] = None
+    page_id: Optional[int] = None
     title: Optional[str] = None
     model: Optional[str] = None
     contents: Optional[List] = None
@@ -23,6 +25,7 @@ class chatData(BaseModel):
 
 @router.post("/user/{user_id}/chat", name="add new chat page")
 async def chat_new(user_id: int, chat: chatData) -> Any:
+    chat_id = -1
     try:
         created_at = int(time.time())
         updated_at = int(time.time())
@@ -30,6 +33,7 @@ async def chat_new(user_id: int, chat: chatData) -> Any:
             chat_id = db_client.chat.add_new_chat(
                 title=chat.title,
                 contents=chat.contents,
+                page_id=chat.page_id,
                 user_id=user_id,
                 model=chat.model,
                 created_at=created_at,
@@ -38,6 +42,7 @@ async def chat_new(user_id: int, chat: chatData) -> Any:
             log.debug(f"add chat: {chat_id}")
         else:
             newdata = {}
+            newdata["page_id"] = chat.page_id
             if chat.title:
                 newdata["title"] = chat.title
             if chat.contents:
@@ -53,7 +58,9 @@ async def chat_new(user_id: int, chat: chatData) -> Any:
     except Exception as err:
         log.debug(f"add chat error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    return JSONResponse(status_code=200, content={"result": "success", "id": chat_id})
+    userinfo = chatlib.credit_balance(user_id, chat.model, chat.contents)
+    res = {"result": "success", "id": chat_id, "updated_at": userinfo.updated_at}
+    return JSONResponse(status_code=200, content=res)
 
 
 @router.post("/user/{user_id}/chats", name="get all chats")
@@ -71,6 +78,7 @@ async def chat_update(chat: chatData) -> Any:
     try:
         chat = db_client.chat.update_chat_by_id(
             chat_id,
+            page_id=chat.page_id,
             title=chat.title,
             contents=chat.contents,
             )
@@ -81,10 +89,16 @@ async def chat_update(chat: chatData) -> Any:
 
 
 @router.delete("/user/{user_id}/chat/{chat_id}", name="delete chat")
-async def chat_delete(chat_id: int) -> Any:
+async def chat_delete(user_id: int, chat_id: int) -> Any:
     try:
-        user_id = db_client.chat.delete_chat(chat_id=chat_id)
+        db_client.chat.delete_chat(chat_id=chat_id)
+        user_data = {"updated_at": int(time.time())}
+        db_client.user.update_user_by_id(
+            user_id,
+            **user_data,
+        )
     except Exception as err:
         log.debug(f"delete user error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    return JSONResponse(status_code=200, content={"result": "success"})
+    res = {"result": "success", "updated_at": user_data["updated_at"]}
+    return JSONResponse(status_code=200, content=res)

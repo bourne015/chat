@@ -74,6 +74,7 @@ async def user_get(
         "email": db_user.email,
         "phone": db_user.phone,
         "avatar": db_user.avatar,
+        "updated_at": db_user.updated_at,
     }
     return JSONResponse(status_code=200, content=res)
 
@@ -90,7 +91,7 @@ async def user_edit(user_id: int, user: UserData) -> Any:
             new_data["phone"] = user.phone
         if user.avatar:
             new_data["avatar"] = user.avatar
-        new_data["updated_at"] = int(time.time())       
+        new_data["updated_at"] = int(time.time())
         user = db_client.user.update_user_by_id(
             user_id,
             **new_data,
@@ -99,6 +100,27 @@ async def user_edit(user_id: int, user: UserData) -> Any:
         log.debug(f"edit user error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
     return JSONResponse(status_code=200, content={"result": "success"})
+
+
+@router.post("/user/{user_id}/info", name="get user info")
+async def user_edit(user_id: int) -> Any:
+    try:
+        db_user = db_client.user.get_user_by_id(user_id)
+    except Exception as err:
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    if db_user is None:
+        log.debug(f"user:{user_id} not found")
+        return JSONResponse(status_code=200, content={"result": "user not found"})
+    res = {
+        "result": "success",
+        "id": db_user.id,
+        "name": db_user.name,
+        "email": db_user.email,
+        "phone": db_user.phone,
+        "avatar": db_user.avatar,
+        "updated_at": db_user.updated_at,
+    }
+    return JSONResponse(status_code=200, content=res)
 
 
 @router.post("/user/{user_id}/security", name="change user password")
