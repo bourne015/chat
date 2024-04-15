@@ -39,6 +39,7 @@ class Chat(Base):
     '''
     __tablename__ = 'Chat'
     id = Column(Integer(), primary_key=True, index=True)
+    page_id = Column(Integer(), comment="tab id assigned in user level", default=-1)
     user_id = Column(Integer(), ForeignKey(User.id), nullable=False)
     title = Column(String(50), comment="this chat title")
     contents = Column(JSON(), comment="chat content of this title")

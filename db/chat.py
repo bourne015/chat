@@ -35,6 +35,7 @@ class ChatDBConnectorComponent(DBConnectorComponent):
                     raise ValueError("user_id is required field")
                 chat = self.tbl(
                     user_id=kwargs.get("user_id"),
+                    page_id=kwargs.get("page_id"),
                     title=kwargs.get("title", "0"),
                     contents=kwargs.get("contents"),
                     model=kwargs.get("model"),
@@ -53,6 +54,7 @@ class ChatDBConnectorComponent(DBConnectorComponent):
         def thd(conn):
             update_columns = [
                 "title", "contents", "model", "created_at", "updated_at",
+                "page_id",
             ]
             chat = conn.query(self.tbl).filter(
                 self.tbl.id == chat_id).first()
