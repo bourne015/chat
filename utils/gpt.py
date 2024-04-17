@@ -13,10 +13,11 @@ class GPT:
     wrapper openai api
     '''
     supported_models = [
-            "gpt-3.5-turbo-1106",
-            "gpt-4-1106-preview",
-            "gpt-4-vision-preview",
-            "dall-e-3"
+        "gpt-4-turbo",
+        "gpt-3.5-turbo-1106",
+        "gpt-4-1106-preview",
+        "gpt-4-vision-preview",
+        "dall-e-3"
     ]
 
     def __init__(self) -> None:
@@ -90,6 +91,7 @@ class GPT:
             "gpt-4-32k-0314",
             "gpt-4-0613",
             "gpt-4-32k-0613",
+            "gpt-4-turbo",
             }:
             tokens_per_message = 3
             tokens_per_name = 1
@@ -119,9 +121,7 @@ class GPT:
                     # a input image fixed to 765 tokens: https://openai.com/pricing
                     num_tokens += 765
                     # in vision case, content is a list
-                    for msg in message["content"]:
-                        if msg.get("type") == "text":
-                            num_tokens += len(encoding.encode(msg.get("text")))
+                    num_tokens += len(encoding.encode(message["content"]))
                 continue
             for key, value in message.items():
                 if key in ["role", "name", "content"]: # since message have other key for db
