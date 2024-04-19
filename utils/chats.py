@@ -17,6 +17,7 @@ class Chat:
         # key: model, value: $ per 1M token
         "gpt-3.5-turbo-1106":   {"input": 1.0, "output": 2.0},
         "gpt-4-1106-preview":   {"input": 10.0, "output": 30.0},
+        "gpt-4-turbo":          {"input": 10.0, "output": 30.0},
         "gpt-4-vision-preview": {"input": 10.0, "output": 30.0},
         "dall-e-3":             {"input": 10.0, "output": 30.0},
         "claude-3-haiku-20240307":  {"input": 0.25, "output": 1.25},

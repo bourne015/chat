@@ -92,6 +92,7 @@ class GPT:
             "gpt-4-0613",
             "gpt-4-32k-0613",
             "gpt-4-turbo",
+            "dall-e-3",
             }:
             tokens_per_message = 3
             tokens_per_name = 1

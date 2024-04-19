@@ -59,7 +59,8 @@ async def chat_new(user_id: int, chat: chatData) -> Any:
         log.debug(f"add chat error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
     userinfo = chatlib.credit_balance(user_id, chat.model, chat.contents)
-    res = {"result": "success", "id": chat_id, "updated_at": userinfo.updated_at}
+    update_time = userinfo.updated_at if userinfo else int(time.time())
+    res = {"result": "success", "id": chat_id, "updated_at": update_time}
     return JSONResponse(status_code=200, content=res)
 
 

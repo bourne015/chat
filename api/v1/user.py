@@ -103,7 +103,7 @@ async def user_edit(user_id: int, user: UserData) -> Any:
 
 
 @router.post("/user/{user_id}/info", name="get user info")
-async def user_edit(user_id: int) -> Any:
+async def user_info(user_id: int) -> Any:
     try:
         db_user = db_client.user.get_user_by_id(user_id)
     except Exception as err:
