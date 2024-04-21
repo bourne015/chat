@@ -100,9 +100,7 @@ class Claude:
                     # a input image fixed to 765 tokens: https://openai.com/pricing
                     num_tokens += 765
                     # in vision case, content is a list
-                    for msg in message["content"]:
-                        if msg.get("type") == "text":
-                            num_tokens += len(encoding.encode(msg.get("text")))
+                    num_tokens += len(encoding.encode(message["content"]))
                 continue
             for key, value in message.items():
                 if key in ["role", "name", "content"]: # since message have other key for db
