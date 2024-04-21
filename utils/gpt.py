@@ -2,7 +2,7 @@ from openai import OpenAI
 import tiktoken
 from retry import retry
 
-from core import settings
+from core.config import settings
 from utils import log
 
 

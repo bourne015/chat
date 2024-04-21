@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from utils import log
 from api.deps import db_client
-from core.security import get_password_hash, verify_password
+from core.security import get_password_hash, verify_password, oss
 
 router = APIRouter()
 log = log.Logger(__name__, clevel=log.logging.DEBUG)
@@ -141,6 +141,15 @@ async def user_chgpwd(user_id: int, form_data: UpdatePassword) -> Any:
         return JSONResponse(status_code=500, content={"result": str(err)})
     return JSONResponse(status_code=200, content={"result": "success"})
 
+
+@router.post("/user/{user_id}/oss_credentials", name="get oss credentials")
+def user_oss_credentials(user_id: int) ->Any:
+    # need check user first
+    cred = oss.get_credentials()
+    log.debug(f"user_oss_credentials")
+    if cred is None:
+        return JSONResponse(status_code=500, content={"result": "failed"})
+    return JSONResponse(status_code=200, content={"result": "success", "credentials": cred.to_map()})
 
 @router.delete("/user/", name="delete user")
 async def user_delete(id: int) -> Any:

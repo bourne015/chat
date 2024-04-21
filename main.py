@@ -4,7 +4,7 @@ from fastapi.responses import PlainTextResponse
 from starlette.middleware.cors import CORSMiddleware
 
 from api.v1 import api_router
-from core import settings
+from core.config import settings
 
 
 root = APIRouter()

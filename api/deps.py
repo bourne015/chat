@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from pydantic import ValidationError
 from sqlmodel import Session, create_engine, select
 
-from core import settings
+from core.config import settings
 from db.connector import DBClient
 from utils import log
 

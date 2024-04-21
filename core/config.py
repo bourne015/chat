@@ -14,13 +14,19 @@ from pydantic import (
 from pydantic_core import MultiHostUrl
 
 
-
 class Settings(BaseSettings):
     API_V1_STR: str = "/v1"
     PROJECT_NAME: str = "mychat"
     ORIGINS: list = ["*", ]
     openai_key: str
     claude_key: str
+
+    oss_access_key: str
+    oss_access_key_secret: str
+    oss_endpoint: str
+    oss_role_arn: str
+    oss_role_session_name: str
+    oss_duration_seconds: int= 3600
 
     class Config:
         env_file = '.env'
@@ -44,3 +50,5 @@ class Settings(BaseSettings):
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         )
+
+settings = Settings()
