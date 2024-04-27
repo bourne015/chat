@@ -54,7 +54,7 @@ class OSS:
             if resp.status_code == 200:
                 return resp.body.credentials
         except Exception as error:
-            log.debug(f"get oss error:{error.message}")
+            print(f"get oss error:{error.message}")
         return None
 
 

@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from db.user import UserDBConnectorComponent
 from db.chat import ChatDBConnectorComponent
+from db.bot import BotDBConnectorComponent
 
 
 @contextmanager
@@ -45,6 +46,7 @@ class DBClient():
 
         self.user = UserDBConnectorComponent(self)
         self.chat = ChatDBConnectorComponent(self)
+        self.bot = BotDBConnectorComponent(self)
 
     def _init_session(self, connect_args):
         if connect_args:

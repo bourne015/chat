@@ -30,7 +30,7 @@ class User(Base):
     created_at = Column(Integer(), default=None)
     updated_at = Column(Integer(), default=None)
     credit = Column(Float(), comment="credit balance", default=0.0)
-    active = Column(Boolean(), comment="whether the user is active")
+    active = Column(Boolean(), comment="whether the user is active", default=True)
 
 
 class Chat(Base):
@@ -46,3 +46,22 @@ class Chat(Base):
     model = Column(String(50), comment="chat model")
     created_at = Column(Integer(), default=None)
     updated_at = Column(Integer(), default=None)
+
+
+class Bot(Base):
+    '''
+    bot data table
+    '''
+    __tablename__ = 'Bot'
+    id = Column(Integer(), primary_key=True, index=True)
+    name = Column(String(50), comment="bot name", nullable=False)
+    avatar = Column(String, comment="bot avatar")
+    description = Column(String, comment="bot detail description")
+    prompts = Column(String, comment="bot prompts", nullable=False)
+    author_id = Column(Integer(), comment="author id")
+    author_name = Column(String(50), comment="author name")
+    likes = Column(Integer(), default=0)
+    public = Column(Boolean(), comment="public or not", default=True)
+    created_at = Column(Integer(), default=None)
+    updated_at = Column(Integer(), default=None)
+    
