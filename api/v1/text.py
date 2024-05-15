@@ -30,7 +30,7 @@ async def ask(data: ModelPrompt) -> Any:
     """
     model = data.model
     question = data.question
-    log.debug(f"model: {model}, Q: {question}")
+    #log.debug(f"model: {model}, Q: {question}")
     try:
         answer = chat.ask(question, model)
     except Exception as e:

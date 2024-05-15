@@ -74,6 +74,7 @@ async def user_get(
         "email": db_user.email,
         "phone": db_user.phone,
         "avatar": db_user.avatar,
+        "credit": db_user.credit,
         "updated_at": db_user.updated_at,
     }
     return JSONResponse(status_code=200, content=res)
@@ -91,6 +92,8 @@ async def user_edit(user_id: int, user: UserData) -> Any:
             new_data["phone"] = user.phone
         if user.avatar:
             new_data["avatar"] = user.avatar
+        if user.credit:
+            new_data["credit"] = user.credit
         new_data["updated_at"] = int(time.time())
         user = db_client.user.update_user_by_id(
             user_id,
@@ -118,6 +121,7 @@ async def user_info(user_id: int) -> Any:
         "email": db_user.email,
         "phone": db_user.phone,
         "avatar": db_user.avatar,
+        "credit": db_user.credit,
         "updated_at": db_user.updated_at,
     }
     return JSONResponse(status_code=200, content=res)

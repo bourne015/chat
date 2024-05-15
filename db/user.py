@@ -40,10 +40,10 @@ class UserDBConnectorComponent(DBConnectorComponent):
                     email=kwargs.get("email"),
                     phone=kwargs.get("phone", None),
                     avatar=kwargs.get("avatar", "1"),
+                    credit=kwargs.get("credit", 0.0),
                     pwd=kwargs.get("pwd"),
                     created_at=kwargs.get("created_at"),
                     updated_at=kwargs.get("updated_at"),
-                    credit=0.0,
                     active=True
                 )
                 conn.add(user)
@@ -57,7 +57,7 @@ class UserDBConnectorComponent(DBConnectorComponent):
     def update_user_by_id(self, user_id, **kwargs):
         def thd(conn):
             update_columns = [
-                "name", "email", "phone", "avatar", "pwd",
+                "name", "email", "phone", "avatar", "credit", "pwd",
                 "created_at", "updated_at", "credit",
             ]
             user = conn.query(self.tbl).filter(
