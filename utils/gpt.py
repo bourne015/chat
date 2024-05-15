@@ -13,6 +13,7 @@ class GPT:
     wrapper openai api
     '''
     supported_models = [
+        "gpt-4o",
         "gpt-4-turbo",
         "gpt-3.5-turbo-1106",
         "gpt-4-1106-preview",

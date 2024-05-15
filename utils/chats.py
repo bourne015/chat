@@ -19,6 +19,7 @@ class Chat:
         "gpt-4-1106-preview":   {"input": 10.0, "output": 30.0},
         "gpt-4-turbo":          {"input": 10.0, "output": 30.0},
         "gpt-4-vision-preview": {"input": 10.0, "output": 30.0},
+        "gpt-4o":               {"input": 5.0, "output": 15.0},
         "dall-e-3":             {"input": 10.0, "output": 30.0},
         "claude-3-haiku-20240307":  {"input": 0.25, "output": 1.25},
         "claude-3-sonnet-20240229": {"input": 3.0, "output": 15.0},
