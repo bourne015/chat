@@ -81,7 +81,8 @@ class GPT:
         Return the number of tokens used by a list of messages.
         """
         try:
-            encoding = tiktoken.encoding_for_model(model)
+            mencode = "gpt-4-turbo" if model == "gpt-4o" else model
+            encoding = tiktoken.encoding_for_model(mencode)
         except KeyError:
             print("Warning: model not found. Using cl100k_base encoding.")
             encoding = tiktoken.get_encoding("cl100k_base")
