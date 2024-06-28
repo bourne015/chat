@@ -9,6 +9,16 @@ class UserDBConnectorComponent(DBConnectorComponent):
     '''
     tbl = User
 
+    def get_all_users(self):
+        def thd(conn):
+            try:
+                users = conn.query(self.tbl).all()
+            except Exception as err:
+                print(f"get all users err: {err}")
+            return [user.to_dict() for user in users]
+        d = self.db.execute(thd)
+        return d
+
     def get_user_by_email(self, email):
         def thd(conn):
             try:

@@ -27,6 +27,7 @@ class UserData(BaseModel):
     phone: Optional[str] = None
     pwd: Optional[str] = None
     avatar: Optional[str] = None
+    credit: Optional[float] = 0.0
     active: Optional[bool] = True
 
 
@@ -47,6 +48,7 @@ async def user_new(user: UserData) -> Any:
             pwd=hash_pwd,
             created_at=created_at,
             updated_at=updated_at,
+            credit=user.credit,
             )
     except Exception as err:
         log.debug(f"add user error:{err}")
@@ -163,5 +165,35 @@ async def user_delete(id: int) -> Any:
             )
     except Exception as err:
         log.debug(f"delete user error:{err}")
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    return JSONResponse(status_code=200, content={"result": "success"})
+
+
+@router.post("/users", name="get all users")
+async def get_all_users() -> Any:
+    try:
+        users = db_client.user.get_all_users()
+    except Exception as err:
+        log.debug(f"get all users error:{err}")
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    return JSONResponse(status_code=200, content={"result": "success", "users": users})
+
+
+@router.post("/user/charge/{user_id}", name="charge for user")
+async def user_edit(user_id: int, account: float) -> Any:
+    try:
+        db_user = db_client.user.get_user_by_id(user_id)
+        new_data = {}
+        if db_user.credit:
+            new_data["credit"] = db_user.credit + account
+        else:
+            new_data["credit"] = account
+        new_data["updated_at"] = int(time.time())
+        user = db_client.user.update_user_by_id(
+            user_id,
+            **new_data,
+            )
+    except Exception as err:
+        log.debug(f"edit user error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
     return JSONResponse(status_code=200, content={"result": "success"})
