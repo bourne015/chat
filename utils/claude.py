@@ -16,6 +16,7 @@ class Claude:
             "claude-3-haiku-20240307",
             "claude-3-sonnet-20240229",
             "claude-3-opus-20240229",
+            "claude-3-5-sonnet-20240620",
     ]
 
     def __init__(self) -> None:
@@ -63,7 +64,8 @@ class Claude:
         use gpt tokens num temporarily
         """
         try:
-            encoding = tiktoken.encoding_for_model(model)
+            fakeModel = "gpt-4" # use GPT for this moment
+            encoding = tiktoken.encoding_for_model(fakeModel)
         except KeyError:
             print("Warning: model not found. Using cl100k_base encoding.")
             encoding = tiktoken.get_encoding("cl100k_base")
@@ -71,6 +73,7 @@ class Claude:
             "claude-3-haiku-20240307",
             "claude-3-sonnet-20240229",
             "claude-3-opus-20240229",
+            "claude-3-5-sonnet-20240620",
             }:
             tokens_per_message = 3
             tokens_per_name = 1
