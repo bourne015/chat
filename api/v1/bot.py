@@ -105,8 +105,9 @@ async def bot_edit(bot_id: int, bot: BotData) -> Any:
             new_data["author_name"] = bot.author_name
         if bot.likes:
             new_data["likes"] = bot.likes
-        if bot.public:
-            new_data["public"] = bot.public     
+        if bot.public is not None:
+            new_data["public"] = bot.public
+            print("this is pub:", bot.public)
         new_data["updated_at"] = int(time.time())
         bot = db_client.bot.update_bot_by_id(
             bot_id,
