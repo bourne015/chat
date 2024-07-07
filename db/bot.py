@@ -50,6 +50,14 @@ class BotDBConnectorComponent(DBConnectorComponent):
                     avatar=kwargs.get("avatar"),
                     description=kwargs.get("description", None),
                     prompts=kwargs.get("prompts", None),
+                    assistant_id=kwargs.get("assistant_id", None),
+                    model=kwargs.get("model", None),
+                    file_search=kwargs.get("file_search", False),
+                    vector_store_ids=kwargs.get("vector_store_ids", None),
+                    code_interpreter=kwargs.get("code_interpreter", False),
+                    code_interpreter_files=kwargs.get("code_interpreter_files", None),
+                    functions=kwargs.get("functions", None),
+                    temperature=kwargs.get("temperature", 1.0),
                     author_id=kwargs.get("author_id", None),
                     author_name=kwargs.get("author_name", None),
                     likes=kwargs.get("likes", 0),
@@ -69,6 +77,9 @@ class BotDBConnectorComponent(DBConnectorComponent):
         def thd(conn):
             update_columns = [
                 "name", "avatar", "description", "prompts", "author_id",
+                "assistant_id", "model", "file_search", "vector_store_ids",
+                "code_interpreter", "code_interpreter_files",
+                "functions", "temperature",
                 "author_name", "likes", "public", "updated_at"
             ]
             bot = conn.query(self.tbl).filter(

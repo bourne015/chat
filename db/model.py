@@ -54,10 +54,18 @@ class Bot(Base):
     '''
     __tablename__ = 'Bot'
     id = Column(Integer(), primary_key=True, index=True)
+    assistant_id = Column(String, comment="assistant id")
     name = Column(String(50), comment="bot name", nullable=False)
     avatar = Column(String, comment="bot avatar")
     description = Column(String, comment="bot detail description")
     prompts = Column(String, comment="bot prompts", nullable=False)
+    model = Column(String, comment="the default model to use")
+    file_search = Column(Boolean(), comment="enable file search or not", default=False)
+    vector_store_ids = Column(JSON(), comment="file search file_ids, dict, key: id, val: name}")
+    code_interpreter = Column(Boolean(), comment="enable code interpreter or not", default=False)
+    code_interpreter_files = Column(JSON(), comment="dict, key: filename, value: file-id")
+    functions = Column(JSON(), comment="dict, key: name, value: function body")
+    temperature = Column(Float(), comment="sampling temperature, between 0 and 2", default=1.0)
     author_id = Column(Integer(), comment="author id")
     author_name = Column(String(50), comment="author name")
     likes = Column(Integer(), default=0)
