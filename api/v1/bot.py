@@ -25,7 +25,7 @@ class BotData(BaseModel):
     public: Optional[bool] = True
     created_at: Optional[int] = None
     updated_at: Optional[int] = None
-    # assistant_id: Optional[str] = None
+    assistant_id: Optional[str] = None
     model: Optional[str] = None
     file_search: Optional[bool] = False
     vector_store_ids: Optional[dict] = {}

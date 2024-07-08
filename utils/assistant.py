@@ -80,13 +80,16 @@ class Assistant:
         List vector store files
         """
         res = []
-        vs_files = self.client.beta.vector_stores.files.list(
-            vector_store_id=vs_id
-        )
-        if vs_files is None:
-            return []
-        for x in vs_files.data:
-            res.append({"id": x.id, "created_at": x.created_at})
+        try:
+            vs_files = self.client.beta.vector_stores.files.list(
+                vector_store_id=vs_id
+            )
+            if vs_files is None:
+                return []
+            for x in vs_files.data:
+                res.append({"id": x.id, "created_at": x.created_at})
+        except Exception as err:
+            log.debug(f"vector_store_files error: {err}")
         return res
 
     def vs_delete(self, vector_store_id: str):
@@ -171,9 +174,13 @@ class Assistant:
             tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
         )
 
-    def create_thread(self, assistant_id: str) -> str:
+    def create_thread(self) -> str:
         thread = self.client.beta.threads.create()
         return thread.id
+
+    def delete_thread(self, thread_id: str) -> str:
+        del_status = self.client.beta.threads.delete(thread_id)
+        return del_status.deleted
 
     def add_thread_message(self,
             thread_id: str,
@@ -190,11 +197,12 @@ class Assistant:
             attachments=attachments,
             )
     
-    def run(self, assistant_id: str, thread_id: str, instructions: str=None):
+    def runs(self, assistant_id: str, thread_id: str, instructions: str=None):
         """
         run a thread.
         instructions paramater will update assistant instructions
         """
+        print("this is msg run")
         parms = {}
         if instructions:
             params["instructions"] = instructions
@@ -203,7 +211,8 @@ class Assistant:
             assistant_id=assistant_id,
             **parms,
         ) as stream:
-            yield stream
+            for text in stream.text_deltas:
+                yield text
             # stream.until_done()
 
     def send_msg_and_run(self,

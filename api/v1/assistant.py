@@ -3,6 +3,8 @@ from typing import Any, List, Dict, Optional, Annotated
 from fastapi import APIRouter, Path, Body, Depends
 from fastapi import File, UploadFile
 from fastapi.responses import JSONResponse
+from sse_starlette.sse import EventSourceResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import shutil
 import os
@@ -183,15 +185,34 @@ async def create_vs_file(vector_store_id: str, file_id: str) -> Any:
     return JSONResponse(content=del_vsfile, status_code=200)
 
 
-@router.get("/assistant/threads", name="create thread")
-async def create_thread(vector_store_id: str) -> Any:
+@router.post("/assistant/threads", name="create thread")
+async def create_thread() -> Any:
     """
     Create threads that assistants can interact with.
     """
-    thread_id = assistant.create_thread()
+    thread_id = None
+    try:
+        thread_id = assistant.create_thread()
+    except Exception as err:
+        log.debug(f"create_thread error:{err}")
+        return JSONResponse(status_code=500, content={"result": str(err)}) 
     return JSONResponse(content={"id": thread_id}, status_code=200)
 
-@router.get(
+
+@router.delete("/assistant/threads/{thread_id}", name="create thread")
+async def delete_thread(thread_id: str) -> Any:
+    """
+    delete a threads
+    """
+    try:
+        del_status = assistant.delete_thread(thread_id)
+    except Exception as err:
+        log.debug(f"delete_thread error:{err}")
+        return JSONResponse(status_code=500, content={"result": str(err)}) 
+    return JSONResponse(content={"deleted": del_status}, status_code=200)
+
+
+@router.post(
     "/assistant/vs/{assistant_id}/threads/{thread_id}/messages",
     name="create message")
 async def create_message(
@@ -206,10 +227,11 @@ async def create_message(
         msg.role,
         msg.content,
         msg.attachments)
+    log.debug(f"toassistantr: {msg.content}")
     async def event_generator():
         try:
-            stream = assistant.run(assistant_id, thread_id, msg.instructions)
-            for text in stream.text_deltas:
+            messages = assistant.runs(assistant_id, thread_id, msg.instructions)
+            for text in messages:
                 yield text
         except Exception as err:
             log.debug(err)

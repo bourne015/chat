@@ -46,6 +46,9 @@ class Chat(Base):
     model = Column(String(50), comment="chat model")
     created_at = Column(Integer(), default=None)
     updated_at = Column(Integer(), default=None)
+    assistant_id = Column(String(), default=None)
+    thread_id = Column(String(), default=None)
+    bot_id = Column(Integer(), default=None)
 
 
 class Bot(Base):
