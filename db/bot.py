@@ -69,7 +69,7 @@ class BotDBConnectorComponent(DBConnectorComponent):
                 conn.commit()
             except Exception as err:
                 print("err:", err)
-            return bot.id
+            return bot.to_dict()
         d = self.db.execute(thd)
         return d
 
