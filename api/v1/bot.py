@@ -77,6 +77,7 @@ async def bot_new(bot: BotData) -> Any:
             functions=bot.functions,
             temperature=bot.temperature,
         )
+        update_shares(updated_at)
     except Exception as err:
         log.debug(f"add bot error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
@@ -85,12 +86,17 @@ async def bot_new(bot: BotData) -> Any:
 
 @router.post("/bot/bots", name="get all bot")
 async def bot_all() -> Any:
+    bots = None
+    shares = None
     try:
         bots = db_client.bot.get_all_bots()
+        shares = db_client.shares.get_all_shares()
     except Exception as err:
         log.debug(f"get bots error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    return JSONResponse(status_code=200, content=bots)
+    return JSONResponse(
+        status_code=200,
+        content={"bots": bots, "date": shares.get("bot_updated")})
 
 
 @router.post("/bot/{bot_id}/info", name="get bot info")
@@ -132,6 +138,7 @@ async def bot_info(bot_id: int) -> Any:
 async def bot_edit(bot_id: int, bot: BotData) -> Any:
     try:
         new_data = {}
+        updated_at = int(time.time())
         if bot.name:
             new_data["name"] = bot.name
         if bot.avatar:
@@ -158,11 +165,13 @@ async def bot_edit(bot_id: int, bot: BotData) -> Any:
         new_data["code_interpreter_files"] = bot.code_interpreter_files
         new_data["functions"] = bot.functions
         new_data["temperature"] = bot.temperature
+        new_data["updated_at"] = updated_at
 
         bot = db_client.bot.update_bot_by_id(
             bot_id,
             **new_data,
             )
+        update_shares(updated_at)
     except Exception as err:
         log.debug(f"edit bot error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
@@ -179,7 +188,30 @@ async def bot_delete(bot_id: int, assistant_id: str) -> Any:
                 db_client.bot.delete_bot(bot_id=bot_id)
         else:
             db_client.bot.delete_bot(bot_id=bot_id)
+        update_shares(int(time.time()))
     except Exception as err:
         log.debug(f"delete bot error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
     return JSONResponse(status_code=200, content={"result": "success"})
+
+
+@router.get("/shares", name="share information")
+async def get_shares() -> Any:
+    shared = None
+    try:
+        shared = db_client.shares.get_all_shares()
+    except Exception as err:
+        log.debug(f"update_shared error:{err}")
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    return JSONResponse(status_code=200, content=shared)
+
+
+def update_shares(updated_at):
+    try:
+        shared = db_client.shares.get_all_shares()
+        if shared:
+            db_client.shares.update_shares_by_id(
+                shared["id"],
+                bot_updated=updated_at)
+    except Exception as err:
+        log.debug(f"update_shared error:{err}")

@@ -75,4 +75,12 @@ class Bot(Base):
     public = Column(Boolean(), comment="public or not", default=True)
     created_at = Column(Integer(), default=None)
     updated_at = Column(Integer(), default=None)
-    
+
+
+class Shares(Base):
+    '''
+    shared informations
+    '''
+    __tablename__ = 'Shares'
+    id = Column(Integer(), primary_key=True, index=True)
+    bot_updated = Column(Integer(), comment="latest bots update time")
