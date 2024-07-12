@@ -98,7 +98,7 @@ class Assistant:
         """
         deleted_vector_store = self.client.beta.vector_stores.delete(
             vector_store_id=vector_store_id)
-        return deleted_vector_store
+        return deleted_vector_store.deleted
 
     def vs_upload_file(self, vector_store_id: str, file_name: str):
         """

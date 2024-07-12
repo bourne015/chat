@@ -13,7 +13,7 @@ class ChatDBConnectorComponent(DBConnectorComponent):
         def thd(conn):
             try:
                 chats = conn.query(self.tbl).filter(
-                    self.tbl.user_id == user_id).all()
+                    self.tbl.user_id == user_id).order_by(self.tbl.updated_at).all()
             except Exception as err:
                 print(f"get chats err: {err}")
             return [chat.to_dict() for chat in chats]

@@ -57,8 +57,7 @@ async def bot_new(bot: BotData) -> Any:
                 assistant_id = new_assistant.id
         created_at = int(time.time())
         updated_at = int(time.time())
-        print("backend bot:", bot)
-        bot_id = db_client.bot.add_new_bot(
+        newbot = db_client.bot.add_new_bot(
             name=bot.name,
             avatar=bot.avatar,
             description=bot.description,
@@ -81,7 +80,7 @@ async def bot_new(bot: BotData) -> Any:
     except Exception as err:
         log.debug(f"add bot error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    return JSONResponse(status_code=200, content={"result": "success", "id":bot_id})
+    return JSONResponse(status_code=200, content=newbot)
 
 
 @router.post("/bot/bots", name="get all bot")
@@ -91,7 +90,7 @@ async def bot_all() -> Any:
     except Exception as err:
         log.debug(f"get bots error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    return JSONResponse(status_code=200, content={"result": "success", "bots": bots})
+    return JSONResponse(status_code=200, content=bots)
 
 
 @router.post("/bot/{bot_id}/info", name="get bot info")
@@ -167,7 +166,7 @@ async def bot_edit(bot_id: int, bot: BotData) -> Any:
     except Exception as err:
         log.debug(f"edit bot error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    return JSONResponse(status_code=200, content={"result": "success"})
+    return JSONResponse(status_code=200, content=bot)
 
 
 @router.delete("/bot/{bot_id}", name="delete bot")

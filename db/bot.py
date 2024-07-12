@@ -12,7 +12,7 @@ class BotDBConnectorComponent(DBConnectorComponent):
     def get_all_bots(self):
         def thd(conn):
             try:
-                bots = conn.query(self.tbl).all()
+                bots = conn.query(self.tbl).order_by(self.tbl.created_at).all()
             except Exception as err:
                 print(f"get all bots err: {err}")
             return [bot.to_dict() for bot in bots]
