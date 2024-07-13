@@ -61,7 +61,7 @@ class Bot(Base):
     name = Column(String(50), comment="bot name", nullable=False)
     avatar = Column(String, comment="bot avatar")
     description = Column(String, comment="bot detail description")
-    prompts = Column(String, comment="bot prompts", nullable=False)
+    instructions = Column(String, comment="bot instructions", nullable=False)
     model = Column(String, comment="the default model to use")
     file_search = Column(Boolean(), comment="enable file search or not", default=False)
     vector_store_ids = Column(JSON(), comment="file search file_ids, dict, key: id, val: name}")

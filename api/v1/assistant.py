@@ -24,7 +24,7 @@ class NewVectorStore(BaseModel):
 class NewAssistant(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    prompt: Optional[str] = "you are a helpful assistant"
+    instructions: Optional[str] = "you are a helpful assistant"
     assistant_id: Optional[str] = None
     model: Optional[str] = None
     file_search: Optional[bool] = False
@@ -222,12 +222,12 @@ async def create_message(
     """
     Create messages within threads
     """
+    log.debug(f"toassistantr: {msg.content}")
     assistant.add_thread_message(
         thread_id,
         msg.role,
         msg.content,
         msg.attachments)
-    log.debug(f"toassistantr: {msg.content}")
     async def event_generator():
         try:
             messages = assistant.runs(assistant_id, thread_id, msg.instructions)

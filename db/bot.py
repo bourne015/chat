@@ -43,13 +43,13 @@ class BotDBConnectorComponent(DBConnectorComponent):
             try:
                 if kwargs.get("name", None) is None:
                     raise ValueError("name is required field")
-                if kwargs.get("prompts", None) is None:
-                    raise ValueError("prompts is required field")
+                if kwargs.get("instructions", None) is None:
+                    raise ValueError("instructions is required field")
                 bot = self.tbl(
                     name=kwargs.get("name", None),
                     avatar=kwargs.get("avatar"),
                     description=kwargs.get("description", None),
-                    prompts=kwargs.get("prompts", None),
+                    instructions=kwargs.get("instructions", None),
                     assistant_id=kwargs.get("assistant_id", None),
                     model=kwargs.get("model", None),
                     file_search=kwargs.get("file_search", False),
@@ -76,7 +76,7 @@ class BotDBConnectorComponent(DBConnectorComponent):
     def update_bot_by_id(self, bot_id, **kwargs):
         def thd(conn):
             update_columns = [
-                "name", "avatar", "description", "prompts", "author_id",
+                "name", "avatar", "description", "instructions", "author_id",
                 "assistant_id", "model", "file_search", "vector_store_ids",
                 "code_interpreter", "code_interpreter_files",
                 "functions", "temperature",

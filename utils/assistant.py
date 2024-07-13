@@ -123,56 +123,35 @@ class Assistant:
     def create_assistant(self,
             name="assistant",
             description="",
-            prompt="you are a helpful assistant",
+            instructions="you are a helpful assistant",
             model="gpt-4o",
-            file_search: bool=False,
-            vector_store_ids: list=None,
-            code_interpreter: bool=False,
-            code_interpreter_files: list=None,
-            functions: list=None,
+            tools: list=[],
+            tool_resources: list=None,
             temperature=1.0):
         """
         creat an assistant
         """
-        tools = []
-        tool_resources = {}
-        if file_search:
-            tools.append({"type": "file_search"})
-            if vector_store_ids:
-                tool_resources["file_search"] = {
-                    "vector_store_ids": vector_store_ids
-                }
-        if code_interpreter:
-            tools.append({"type": "code_interpreter"})
-            if code_interpreter_files:
-                tool_resources["code_interpreter"] = {
-                    "file_ids": code_interpreter_files
-                }
-        if functions:
-            tools.append({"type": "function", "function": functions})
         assistant = self.client.beta.assistants.create(
             name=name,
             description=description,
-            instructions=prompt,
+            instructions=instructions,
             model=model,
-            tools=tools if tools else None,
-            tool_resources=tool_resources if tool_resources else None,
+            tools=tools,
+            tool_resources=tool_resources,
             temperature=temperature
         )
         return assistant
     
+    def update_assistant(self, assistant_id, **kwargs):
+        print("uuuuupdate: ", kwargs)
+        my_updated_assistant = self.client.beta.assistants.update(
+            assistant_id,
+            **kwargs
+        )
+
     def delete_assistant(self, assistant_id: str):
         res = self.client.beta.assistants.delete(assistant_id)
         return res
-
-    def update_assistant(self, assistant_id: str, **kwargs):
-        """
-        update assistant
-        """
-        assistant = self.client.beta.assistants.update(
-            assistant_id=assistant_id,
-            tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
-        )
 
     def create_thread(self) -> str:
         thread = self.client.beta.threads.create()
