@@ -180,12 +180,15 @@ class Assistant:
         """
         create a message
         """
-        self.client.beta.threads.messages.create(
-            thread_id=thread_id,
-            role=role,
-            content=message,
-            attachments=attachments,
-            )
+        try:
+            self.client.beta.threads.messages.create(
+                thread_id=thread_id,
+                role=role,
+                content=message,
+                attachments=attachments,
+                )
+        except Exception as err:
+            log.debug(f"add_thread_message error: {err}")
     
     def runs(self, assistant_id: str, thread_id: str, instructions: str=None):
         """
@@ -193,17 +196,17 @@ class Assistant:
         instructions paramater will update assistant instructions
         """
         print("this is msg run")
-        parms = {}
+        params = {}
         if instructions:
             params["instructions"] = instructions
+        #params["response_format"] = { "type": "json_object" }
         with self.client.beta.threads.runs.stream(
             thread_id=thread_id,
             assistant_id=assistant_id,
-            **parms,
+            **params,
         ) as stream:
-            for text in stream.text_deltas:
-                yield text
-            # stream.until_done()
+            for event in stream:
+                yield event.model_dump_json(exclude_unset=True)
 
     def send_msg_and_run(self,
             assistant_id,
