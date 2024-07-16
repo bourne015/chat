@@ -29,10 +29,12 @@ class chatData(BaseModel):
 @router.post("/user/{user_id}/chat", name="add or edit chat page")
 async def chat_new(user_id: int, chat: chatData) -> Any:
     chat_id = -1
+    new_chat = False
     try:
         created_at = int(time.time())
         updated_at = int(time.time())
         if chat.id == -1:
+            new_chat = True
             chat_id = db_client.chat.add_new_chat(
                 title=chat.title,
                 contents=chat.contents,
@@ -70,7 +72,7 @@ async def chat_new(user_id: int, chat: chatData) -> Any:
     except Exception as err:
         log.debug(f"add chat error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    userinfo = chatlib.credit_balance(user_id, chat.model, chat.contents)
+    userinfo = chatlib.credit_balance(user_id, chat, new_chat)
     update_time = userinfo.updated_at if userinfo else int(time.time())
     res = {"result": "success", "id": chat_id, "updated_at": update_time}
     return JSONResponse(status_code=200, content=res)

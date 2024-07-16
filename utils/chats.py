@@ -75,9 +75,10 @@ class Chat:
         log.debug(f"token input: {input_token}, output: {output_token}")
         return input_token, output_token
 
-    def credit_balance(self, user_id, model, messages):
+    def credit_balance(self, user_id, chat, is_new):
         userinfo = None
         try:
+            model, messages = chat.model, chat.contents
             input_token, output_token = self.token_consume(model, messages)
             input_price = (input_token * self.PRICE[model]["input"] / 1000000) * self.EXCH_RATE
             output_price = (output_token * self.PRICE[model]["output"] / 1000000) * self.EXCH_RATE
@@ -85,8 +86,11 @@ class Chat:
             user = db_client.user.get_user_by_id(user_id)
             if user.credit is None:
                 user.credit = 0
+            new_credit = user.credit - input_price * 1.2 - output_price * 1.2
+            if is_new and chat.assistant_id is not None:
+                new_credit = new_credit - 0.22
             newdata = {
-                "credit": user.credit - input_price - output_price,
+                "credit": new_credit,
                 "updated_at": int(time.time())
             }
             userinfo = db_client.user.update_user_by_id(
