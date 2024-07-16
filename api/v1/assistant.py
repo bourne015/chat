@@ -236,7 +236,9 @@ async def create_message(
     """
     Create messages within threads
     """
-    log.debug(f"toassistantr: {msg.content}")
+    for x in msg.attachments:
+        x.pop("downloading", None)
+    log.debug(f"toassistantr: {msg}")
     assistant.add_thread_message(
         thread_id,
         msg.role,
