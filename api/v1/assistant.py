@@ -2,7 +2,7 @@ import time
 from typing import Any, List, Dict, Optional, Annotated
 from fastapi import APIRouter, Path, Body, Depends
 from fastapi import File, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from sse_starlette.sse import EventSourceResponse
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -90,7 +90,7 @@ async def openai_file(file_name: str) -> Any:
     return JSONResponse(content=res, status_code=200)
 
 
-@router.delete("/assistant/files/{file_id}", name="upload file")
+@router.delete("/assistant/files/{file_id}", name="delete file")
 async def openai_file(file_id: str) -> Any:
     """
     delete a file in openai
@@ -102,6 +102,20 @@ async def openai_file(file_id: str) -> Any:
         log.debug(f"delete file in openai error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})      
     return JSONResponse(content=deletedfile, status_code=200)
+
+
+@router.get("/assistant/files/{file_id}", name="download file")
+async def download_file(file_id: str, file_name: str) -> Any:
+    status = None
+    try:
+        status = await assistant.file_download(file_id, file_name)
+        file_path = os.path.join(UPLOAD_DIR, file_name)
+        if os.path.exists(file_path):
+            return FileResponse(file_path, filename=file_name)
+    except Exception as err:
+        log.debug(f"download file error:{err}")
+        return JSONResponse(status_code=500, content={"result": str(err)})
+    return JSONResponse(status_code=500, content={"result": status})
 
 
 @router.post("/assistant/vs", name="create vector store")

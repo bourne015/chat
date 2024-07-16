@@ -60,6 +60,17 @@ class Assistant:
     def file_delete(self, file_id: str):
         self.client.files.delete(file_id)
 
+    async def file_download(self, file_id: str, file_name: str):
+        try:
+            print("file_download")
+            file_data = self.client.files.content(file_id)
+            file_data_bytes = file_data.read()
+            with open(os.path.join(UPLOAD_DIR, file_name), "wb") as file:
+                file.write(file_data_bytes)
+        except Exception as err:
+            log.debug(f"file_download error: {err}")
+            return err.body
+
     def create_vs_with_files(self, vector_store_name: str="", files_name: list=[]) -> str:
         """
         upload a list of files to openai vector stores
