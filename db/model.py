@@ -26,6 +26,7 @@ class User(Base):
     email = Column(String(50), comment="user email", nullable=False)
     phone = Column(String(20), comment="phone number")
     avatar = Column(String, comment="user avatar")
+    avatar_bot = Column(String, comment="bot avatar")
     pwd = Column(String(200), comment="password", nullable=False)
     created_at = Column(Integer(), default=None)
     updated_at = Column(Integer(), default=None)
