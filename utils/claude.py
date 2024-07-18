@@ -3,6 +3,7 @@ import tiktoken
 from retry import retry
 
 from core.config import settings
+from .credit import Credit
 from utils import log
 
 
@@ -22,6 +23,7 @@ class Claude:
     def __init__(self) -> None:
         self.model = self.supported_models[0]
         self.client = anthropic.Anthropic(api_key=settings.claude_key)
+        self.credit = Credit()
         print("claude init: ", self.model)
 
     @retry(tries=3, delay=1, backoff=1)
@@ -42,7 +44,7 @@ class Claude:
         return response.content[0].text
 
     @retry(tries=3, delay=1, backoff=1)
-    def asks(self, prompt_list, model, stream = True):
+    def asks(self, user_id, prompt_list, model, stream = True):
         '''
         question with context
         prompt_list store a session of prompts and answers
@@ -50,6 +52,7 @@ class Claude:
         if model not in self.supported_models:
             model = self.supported_models[1]
 
+        input_tokens = output_tokens = 0
         with self.client.messages.stream(
             model=model,
             messages=prompt_list,
@@ -57,6 +60,13 @@ class Claude:
         ) as stream:
             for text in stream.text_stream:
                 yield text
+
+        message = stream.get_final_message()
+        if getattr(message, 'usage', None):
+            input_tokens = getattr(message.usage, 'input_tokens', 0)
+            output_tokens = getattr(message.usage, 'output_tokens', 0)
+        self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
+        
 
     def num_tokens_from_messages(self, messages, model="claude-3-haiku-20240307"):
         """

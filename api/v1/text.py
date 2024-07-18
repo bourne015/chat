@@ -42,7 +42,7 @@ async def ask(data: ModelPrompt) -> Any:
             )
 
 @router.post("/stream/chat", name="stream chat")
-async def ask_stream(data: ModelPrompts) -> Any:
+async def ask_stream(data: ModelPrompts, user_id: int) -> Any:
     """
     server sent event
     """
@@ -55,7 +55,7 @@ async def ask_stream(data: ModelPrompts) -> Any:
         log.debug(f"stream: {model}, Q: {content[0].get('text')}")
     async def event_generator():
         try:
-            answer = chat.asks(question, model, stream = True)
+            answer = chat.asks(user_id, question, model, stream = True)
             for text in answer:
                 if text:
                     yield text
@@ -67,7 +67,7 @@ async def ask_stream(data: ModelPrompts) -> Any:
     #return  StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @router.post("/image", name="image")
-async def image(data: ModelPrompt) -> Any:
+async def image(data: ModelPrompt, user_id: int) -> Any:
     """
     generate image
     """
@@ -76,7 +76,7 @@ async def image(data: ModelPrompt) -> Any:
     log.debug(f"image model: {model}, Q: {question}")
     #log.debug(f"image model: {model}")
     try:
-        answer = chat.gen_image(question, model)
+        answer = chat.gen_image(user_id, question, model)
     except Exception as e:
         log.error(f"err: {e}")
         return JSONResponse(status_code=500, content=str(e))

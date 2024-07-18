@@ -190,7 +190,7 @@ class Assistant:
         except Exception as err:
             log.debug(f"add_thread_message error: {err}")
     
-    def runs(self, assistant_id: str, thread_id: str, instructions: str=None):
+    def runs(self, user_id: int, assistant_id: str, thread_id: str, instructions: str=None):
         """
         run a thread.
         instructions paramater will update assistant instructions
@@ -200,13 +200,20 @@ class Assistant:
         if instructions:
             params["instructions"] = instructions
         #params["response_format"] = { "type": "json_object" }
+        input_tokens = output_tokens = 0
         with self.client.beta.threads.runs.stream(
             thread_id=thread_id,
             assistant_id=assistant_id,
             **params,
         ) as stream:
             for event in stream:
+                if (event and
+                    "thread.run.step" == event.event[:15] and
+                    getattr(event.data, 'usage', None)):
+                    input_tokens = event.data.usage.prompt_token
+                    output_tokens = event.data.usage.completion_tokens
                 yield event.model_dump_json(exclude_unset=True)
+        self.credit.from_tokens(user_id, "gpt-4o", input_tokens, output_tokens)
 
     def send_msg_and_run(self,
             assistant_id,

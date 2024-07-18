@@ -46,7 +46,7 @@ class Chat:
 
         return res
 
-    def asks(self, prompt_list, model, stream = True):
+    def asks(self, user_id, prompt_list, model, stream = True):
         '''
         question with context
         prompt_list store a session of prompts and answers
@@ -57,12 +57,12 @@ class Chat:
             # there's no system role in Claude, use system paramater instead
             # don't use system prompt in this mement
             # system_prompt = prompt_list[0]['content'] 
-        res = org.asks(prompt_list, model, stream=stream)
+        res = org.asks(user_id, prompt_list, model, stream=stream)
 
         return res
 
-    def gen_image(self, prompt, model = 'dall-e-3'):
-        res = self.gpt.gen_image(prompt=prompt, model=model)
+    def gen_image(self, user_id, prompt, model = 'dall-e-3'):
+        res = self.gpt.gen_image(user_id, prompt=prompt, model=model)
 
         return res
 

@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from utils import log
 from utils import chat as chatlib
+from utils import credit
 from api.deps import db_client
 
 router = APIRouter()
@@ -72,7 +73,9 @@ async def chat_new(user_id: int, chat: chatData) -> Any:
     except Exception as err:
         log.debug(f"add chat error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    userinfo = chatlib.credit_balance(user_id, chat, new_chat)
+    if is_new and chat.assistant_id is not None:
+        credit.from_costs(user_id, 0.22) #every code interpreter cost $0.03
+    # userinfo = chatlib.credit_balance(user_id, chat, new_chat)
     update_time = userinfo.updated_at if userinfo else int(time.time())
     res = {"result": "success", "id": chat_id, "updated_at": update_time}
     return JSONResponse(status_code=200, content=res)

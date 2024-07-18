@@ -230,6 +230,7 @@ async def delete_thread(thread_id: str) -> Any:
     "/assistant/vs/{assistant_id}/threads/{thread_id}/messages",
     name="create message")
 async def create_message(
+        user_id: int,
         assistant_id: str,
         thread_id: str,
         msg: NewMessage) -> Any:
@@ -246,7 +247,7 @@ async def create_message(
         msg.attachments)
     async def event_generator():
         try:
-            messages = assistant.runs(assistant_id, thread_id, msg.instructions)
+            messages = assistant.runs(user_id, assistant_id, thread_id, msg.instructions)
             for text in messages:
                 yield text
         except Exception as err:
