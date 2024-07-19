@@ -1,4 +1,6 @@
+import time
 from api.deps import db_client
+from utils import log
 
 
 log = log.Logger(__name__, clevel=log.logging.DEBUG)
@@ -27,8 +29,9 @@ class Credit:
             user = db_client.user.get_user_by_id(user_id)
             if user.credit is None:
                 user.credit = 0
-            input_cost = EXCH_RATE * input_tokens * self.PRICE.get(model, "gpt-4-turbo")["input"]
-            output_cost = EXCH_RATE * output_tokens * self.PRICE.get(model, "gpt-4-turbo")["output"]
+            price = self.PRICE.get(model, "gpt-4-turbo")
+            input_cost = self.EXCH_RATE * (input_tokens * price["input"])/1000000
+            output_cost = self.EXCH_RATE * (output_tokens * price["output"])/1000000
             new_credit = user.credit - input_cost * 1.2 - output_cost * 1.2
             newdata = {
                 "credit": new_credit,
@@ -38,13 +41,14 @@ class Credit:
                 user_id,
                 **newdata,
             )
+            log.debug(f"***from_tokens: model: {model}, {price}")
             log.debug(f"***from_tokens: {input_tokens}, {output_tokens}")
             log.debug(f"***from_tokens: {user.credit}, {new_credit}")
         except Exception as err:
             log.debug(f"from_tokens error:{err}")
         return userinfo
     
-    def from_costs(self, user_id, model, cost):
+    def from_costs(self, user_id, cost):
         """
         cost unit: $
         """
@@ -53,7 +57,7 @@ class Credit:
             user = db_client.user.get_user_by_id(user_id)
             if user.credit is None:
                 user.credit = 0
-            new_credit = user.credit - EXCH_RATE * cost
+            new_credit = user.credit - self.EXCH_RATE * cost
             newdata = {
                 "credit": new_credit,
                 "updated_at": int(time.time())
