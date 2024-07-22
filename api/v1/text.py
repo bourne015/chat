@@ -24,7 +24,7 @@ class ModelPrompt(BaseModel):
     question: str
 
 @router.post("/chat", name="chat")
-async def ask(data: ModelPrompt) -> Any:
+async def ask(data: ModelPrompt, user_id: int) -> Any:
     """
     a single question
     """
@@ -32,7 +32,7 @@ async def ask(data: ModelPrompt) -> Any:
     question = data.question
     #log.debug(f"model: {model}, Q: {question}")
     try:
-        answer = chat.ask(question, model)
+        answer = chat.ask(user_id, question, model)
     except Exception as e:
         log.error(f"err: {e}")
         return JSONResponse(status_code=500, content=str(e))

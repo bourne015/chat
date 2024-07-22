@@ -27,7 +27,7 @@ class Claude:
         print("claude init: ", self.model)
 
     @retry(tries=3, delay=1, backoff=1)
-    def ask(self, prompt, model, stream = False):
+    def ask(self, user_id, prompt, model, stream = False):
         '''
         question without context
         '''
@@ -41,6 +41,12 @@ class Claude:
             stream=stream
         )
 
+        input_tokens = output_tokens = 0
+        if getattr(response, 'usage', None):
+            input_tokens = getattr(response.usage, 'input_tokens', 0)
+            output_tokens = getattr(response.usage, 'output_tokens', 0)
+        self.credit.from_tokens(
+                user_id, model, input_tokens, output_tokens)
         return response.content[0].text
 
     @retry(tries=3, delay=1, backoff=1)

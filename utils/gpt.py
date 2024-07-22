@@ -30,7 +30,7 @@ class GPT:
         print("Chat init: ", self.model)
 
     @retry(tries=3, delay=1, backoff=1)
-    def ask(self, question, model, stream = False):
+    def ask(self, user_id, question, model, stream = False):
         '''
         question without context
         '''
@@ -43,6 +43,12 @@ class GPT:
             stream=stream
         )
 
+        input_tokens = output_tokens = 0
+        if getattr(response, 'usage', None):
+            input_tokens = getattr(response.usage, 'prompt_tokens', 0)
+            output_tokens = getattr(response.usage, 'completion_tokens', 0)
+        self.credit.from_tokens(
+                user_id, model, input_tokens, output_tokens)
         return response.choices[0].message.content
 
     @retry(tries=3, delay=1, backoff=1)
@@ -82,8 +88,7 @@ class GPT:
             size="1024x1024",
             quality="standard",
             response_format='b64_json',
-            n=1,
-            )
+            n=1)
 
         self.credit.from_costs(user_id, 0.04)
         return response

@@ -37,12 +37,12 @@ class Chat:
             return self.claude
         return self.gpt
 
-    def ask(self, prompt, model, stream = False):
+    def ask(self, user_id, prompt, model, stream = False):
         '''
         prompt without context
         '''
         org = self.get_org(model)
-        res = org.ask(prompt, model, stream=stream)
+        res = org.ask(user_id, prompt, model, stream=stream)
 
         return res
 

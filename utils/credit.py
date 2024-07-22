@@ -21,6 +21,7 @@ class Credit:
         "claude-3-opus-20240229":   {"input": 15.0, "output": 75.0},
         "claude-3-5-sonnet-20240620": {"input": 3.0, "output": 15.0},
     }
+    defalt_price = {"input": 10.0, "output": 30.0}
 
     def from_tokens(self, user_id, model, input_tokens, output_tokens):
         """
@@ -30,7 +31,7 @@ class Credit:
             user = db_client.user.get_user_by_id(user_id)
             if user.credit is None:
                 user.credit = 0
-            price = self.PRICE.get(model, "gpt-4-turbo")
+            price = self.PRICE.get(model, self.defalt_price)
             input_cost = self.EXCH_RATE * (input_tokens * price["input"])/1000000
             output_cost = self.EXCH_RATE * (output_tokens * price["output"])/1000000
             new_credit = user.credit - input_cost * 1.2 - output_cost * 1.2
