@@ -89,11 +89,11 @@ async def user_get(
 async def user_edit(user_id: int, user: UserData) -> Any:
     try:
         new_data = {}
-        if user.name:
+        if user.name != None:
             new_data["name"] = user.name
         if user.email:
             new_data["email"] = user.email
-        if user.phone:
+        if user.phone != None:
             new_data["phone"] = user.phone
         if user.avatar:
             new_data["avatar"] = user.avatar
