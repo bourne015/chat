@@ -77,6 +77,37 @@ class GPT:
             yield chunk_message
         self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
 
+    @retry(tries=3, delay=1, backoff=1)
+    def completions(self, user_id, chat_completion):
+        '''
+        question with context
+        prompt_list store a session of prompts and answers
+        '''
+        model = chat_completion.model
+        messages = chat_completion.messages
+        tools = chat_completion.tools
+        stream = True
+        if model not in self.supported_models:
+            model = self.supported_models[1]
+
+        input_tokens = output_tokens = 0
+        response = self.client.chat.completions.create(
+            model=model,
+            messages=messages,
+            tools=tools if tools else None,
+            max_tokens=4096,
+            stream_options={"include_usage": True},
+            stream=stream
+        )
+        for chunk in response:
+            if not chunk.choices and getattr(chunk, 'usage', None):
+                input_tokens = chunk.usage.prompt_tokens
+                output_tokens = chunk.usage.completion_tokens
+                break
+            yield chunk.model_dump_json(exclude_unset=True)
+        self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
+
+
     def gen_image(self, user_id, prompt, model = 'dall-e-3'):
         """
         generate image

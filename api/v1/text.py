@@ -1,4 +1,4 @@
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -17,6 +17,12 @@ log = log.Logger(__name__, clevel=log.logging.DEBUG)
 class ModelPrompts(BaseModel):
     model: str
     question: List
+
+
+class ChatCompletion(BaseModel):
+    model: str
+    messages: List
+    tools: Optional[list] = None
 
 
 class ModelPrompt(BaseModel):
@@ -60,6 +66,30 @@ async def ask_stream(data: ModelPrompts, user_id: int) -> Any:
                 if text:
                     yield text
                 #await asyncio.sleep(0.01)
+        except Exception as err:
+            log.debug(err)
+            yield err
+    return EventSourceResponse(event_generator())
+    #return  StreamingResponse(event_generator(), media_type="text/event-stream")
+
+@router.post("/stream/chats", name="stream chat")
+async def asks_stream(data: ChatCompletion, user_id: int) -> Any:
+    """
+    server sent event
+    """
+    model = data.model
+    question = data.messages
+    tools = data.tools
+    content = question[-1].get('content') if question else None
+    if type(content) == str:
+        log.debug(f"stream: {model}, Q: {content}")
+    elif type(content) == list:
+        log.debug(f"stream: {model}, Q: {content[0].get('text')}")
+    async def event_generator():
+        try:
+            answer = chat.completions(user_id, data)
+            for text in answer:
+                yield text
         except Exception as err:
             log.debug(err)
             yield err

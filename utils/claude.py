@@ -72,7 +72,36 @@ class Claude:
             input_tokens = getattr(message.usage, 'input_tokens', 0)
             output_tokens = getattr(message.usage, 'output_tokens', 0)
         self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
-        
+
+    @retry(tries=3, delay=1, backoff=1)
+    def completions(self, user_id, chat_completion):
+        '''
+        question with context
+        prompt_list store a session of prompts and answers
+        '''
+        model = chat_completion.model
+        messages = chat_completion.messages
+        tools = chat_completion.tools
+        stream = True
+        if model not in self.supported_models:
+            model = self.supported_models[1]
+
+        input_tokens = output_tokens = 0
+        with self.client.messages.stream(
+            model=model,
+            messages=messages,
+            tools=tools,
+            max_tokens=4096,
+            ) as stream:
+            for chunk in stream:
+                yield chunk.model_dump_json(exclude_unset=True)
+
+        message = stream.get_final_message()
+        if getattr(message, 'usage', None):
+            input_tokens = getattr(message.usage, 'input_tokens', 0)
+            output_tokens = getattr(message.usage, 'output_tokens', 0)
+        self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
+ 
 
     def num_tokens_from_messages(self, messages, model="claude-3-haiku-20240307"):
         """

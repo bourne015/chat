@@ -61,6 +61,23 @@ class Chat:
 
         return res
 
+    def completions(self, user_id, chat_completion):
+        '''
+        question with context
+        prompt_list store a session of prompts and answers
+        '''
+        model  = chat_completion.model
+        prompt_list = chat_completion.messages 
+        org = self.get_org(model)
+        if model in self.claude.supported_models and prompt_list and prompt_list[0]['role'] == "system":
+            prompt_list[0]['role'] = "user"
+            # there's no system role in Claude, use system paramater instead
+            # don't use system prompt in this mement
+            # system_prompt = prompt_list[0]['content'] 
+        res = org.completions(user_id, chat_completion)
+
+        return res
+
     def gen_image(self, user_id, prompt, model = 'dall-e-3'):
         res = self.gpt.gen_image(user_id, prompt=prompt, model=model)
 

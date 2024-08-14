@@ -73,7 +73,7 @@ async def bot_new(bot: BotData) -> Any:
         if bot.model is None:
             bot.model = "gpt-4o"
         bot_data = bot.dict()
-        if bot.file_search or bot.code_interpreter or bot.functions:
+        if bot.file_search or bot.code_interpreter:
             new_assistant = assistant.create_assistant(
                 **(bot.to_openai_assistant())
             )
@@ -138,7 +138,7 @@ async def bot_edit(bot_id: int, bot: BotData) -> Any:
             assistant.update_assistant(
                 bot.assistant_id,
                 **(bot.to_openai_assistant()))
-        elif bot.file_search or bot.code_interpreter or bot.functions:
+        elif bot.file_search or bot.code_interpreter:
             new_assistant = assistant.create_assistant(
                 **(bot.to_openai_assistant()))
             if new_assistant:
