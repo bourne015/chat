@@ -50,6 +50,7 @@ class Chat(Base):
     assistant_id = Column(String(), default=None)
     thread_id = Column(String(), default=None)
     bot_id = Column(Integer(), default=None)
+    artifact = Column(Boolean(), comment="enable artifact", default=False)
 
 
 class Bot(Base):
