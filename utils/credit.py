@@ -43,9 +43,9 @@ class Credit:
                 user_id,
                 **newdata,
             )
-            log.debug(f"***from_tokens: model: {model}, {price}")
+            #log.debug(f"***from_tokens: model: {model}, {price}")
             log.debug(f"***from_tokens: {input_tokens}, {output_tokens}")
-            log.debug(f"***from_tokens: {user.credit}, {new_credit}")
+            #log.debug(f"***from_tokens: {user.credit}, {new_credit}")
         except Exception as err:
             log.debug(f"from_tokens error:{err}")
         return userinfo

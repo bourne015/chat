@@ -80,6 +80,16 @@ class Claude:
         prompt_list store a session of prompts and answers
         '''
         model = chat_completion.model
+        system_prompt = "you are a helpful assistant"
+        if chat_completion.messages[0]['role'] == "system":
+            chat_completion.messages[0]['role'] = 'user'
+            if chat_completion.messages[0]['content'] is list:
+                system_prompt = chat_completion.messages[0]['content'][0]['text']
+                chat_completion.messages[0]['content'][0]['text'] = '你好'
+            else:
+                system_prompt = chat_completion.messages[0]['content']
+                chat_completion.messages[0]['content'] = '你好'
+            # chat_completion.messages.pop(0)
         messages = chat_completion.messages
         tools = chat_completion.tools
         stream = True
@@ -87,20 +97,30 @@ class Claude:
             model = self.supported_models[1]
 
         input_tokens = output_tokens = 0
-        with self.client.messages.stream(
+        # with self.client.messages.stream(
+        resp = self.client.messages.create(
             model=model,
             messages=messages,
+            system=system_prompt,
             tools=tools,
             max_tokens=4096,
-            ) as stream:
-            for chunk in stream:
-                yield chunk.model_dump_json(exclude_unset=True)
+            stream=stream,
+            )
+        for x in resp:
+            if getattr(x, 'usage', None):
+                input_tokens = getattr(x.usage, 'input_tokens', 0)
+                output_tokens = getattr(x.usage, 'output_tokens', 0)
+                self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
+            yield x.model_dump_json(exclude_unset=True)
+        #as stream:
+        #    for chunk in stream:
+        #        yield chunk.model_dump_json(exclude_unset=True)
 
-        message = stream.get_final_message()
-        if getattr(message, 'usage', None):
-            input_tokens = getattr(message.usage, 'input_tokens', 0)
-            output_tokens = getattr(message.usage, 'output_tokens', 0)
-        self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
+        #message = stream.get_final_message()
+        #if getattr(message, 'usage', None):
+        #    input_tokens = getattr(message.usage, 'input_tokens', 0)
+        #    output_tokens = getattr(message.usage, 'output_tokens', 0)
+        #self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
  
 
     def num_tokens_from_messages(self, messages, model="claude-3-haiku-20240307"):
