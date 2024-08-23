@@ -85,11 +85,11 @@ class Claude:
             chat_completion.messages[0]['role'] = 'user'
             if chat_completion.messages[0]['content'] is list:
                 system_prompt = chat_completion.messages[0]['content'][0]['text']
-                chat_completion.messages[0]['content'][0]['text'] = '你好'
+                #chat_completion.messages[0]['content'][0]['text'] = '你好'
             else:
                 system_prompt = chat_completion.messages[0]['content']
-                chat_completion.messages[0]['content'] = '你好'
-            # chat_completion.messages.pop(0)
+                #chat_completion.messages[0]['content'] = '你好'
+            chat_completion.messages.pop(0)
         messages = chat_completion.messages
         tools = chat_completion.tools
         stream = True
