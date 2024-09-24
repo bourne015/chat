@@ -93,8 +93,8 @@ class Claude:
         messages = chat_completion.messages
         tools = chat_completion.tools
         stream = True
-        if model not in self.supported_models:
-            model = self.supported_models[1]
+        # if model not in self.supported_models:
+        #     model = self.supported_models[1]
 
         input_tokens = output_tokens = 0
         # with self.client.messages.stream(
