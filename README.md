@@ -11,5 +11,21 @@ A Fastapi service wrappered ChatGPT API
 ### 2. install dependencies
 `python3 -m pip install requirements.txt`
 
+### 3. deploy db
+* install postgresql
+
+    `sudo apt-get install postgresql postgresql-client`
+
+* create db
+
+    ...
+
+* config
+
+    `alembic upgrade head`
+
+### 4. config OSS(optional)
+...
+
 ## Run
 `python3 main.py`
