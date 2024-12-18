@@ -33,7 +33,7 @@ class Chat:
 
     def get_org(self, model):
         log.debug(f"get model org: {model}")
-        if model in self.claude.supported_models:
+        if model.startswith("claude"):
             return self.claude
         return self.gpt
 
