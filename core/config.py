@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     openai_key: str
     claude_key: str
     gemini_key: str
+    deepseek_key: str
 
     oss_access_key: str
     oss_access_key_secret: str

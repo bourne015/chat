@@ -5,6 +5,7 @@ from api.deps import db_client
 from .claude import Claude
 from .gpt import GPT
 from .gemini import Gemini
+from .deepseek import DeepSeek
 
 
 log = log.Logger(__name__, clevel=log.logging.DEBUG)
@@ -32,6 +33,7 @@ class Chat:
         self.gpt = GPT()
         self.claude = Claude()
         self.gemini = Gemini()
+        self.deepseek = DeepSeek()
 
     def get_org(self, model):
         log.debug(f"get model org: {model}")
@@ -39,6 +41,8 @@ class Chat:
             return self.claude
         elif model.startswith("gemini"):
             return self.gemini
+        elif model.startswith("deepseek"):
+            return self.deepseek
         return self.gpt
 
     def ask(self, user_id, prompt, model, stream = False):
