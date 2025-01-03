@@ -4,6 +4,7 @@ from utils import log
 from api.deps import db_client
 from .claude import Claude
 from .gpt import GPT
+from .gemini import Gemini
 
 
 log = log.Logger(__name__, clevel=log.logging.DEBUG)
@@ -30,11 +31,14 @@ class Chat:
     def __init__(self) -> None:
         self.gpt = GPT()
         self.claude = Claude()
+        self.gemini = Gemini()
 
     def get_org(self, model):
         log.debug(f"get model org: {model}")
         if model.startswith("claude"):
             return self.claude
+        elif model.startswith("gemini"):
+            return self.gemini
         return self.gpt
 
     def ask(self, user_id, prompt, model, stream = False):

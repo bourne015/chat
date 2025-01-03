@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     ORIGINS: list = ["*", ]
     openai_key: str
     claude_key: str
+    gemini_key: str
 
     oss_access_key: str
     oss_access_key_secret: str
