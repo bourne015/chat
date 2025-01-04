@@ -1,6 +1,8 @@
 import anthropic
 import tiktoken
 from retry import retry
+import httpx
+import base64
 
 from core.config import settings
 from .credit import Credit
@@ -91,6 +93,14 @@ class Claude:
                 #chat_completion.messages[0]['content'] = '你好'
             chat_completion.messages.pop(0)
         messages = chat_completion.messages
+        for msg in messages:
+            if not isinstance(msg['content'], list):
+                continue
+            for _ct in msg['content']:
+                if _ct['type'] == "image" and _ct['source']['data'].startswith('http'):
+                    image = httpx.get(_ct['source']['data'])
+                    _ct['source']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
+
         tools = chat_completion.tools
         stream = True
         # if model not in self.supported_models:
