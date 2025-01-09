@@ -2,36 +2,48 @@ import google.generativeai as genai
 from retry import retry
 import httpx
 import base64
+import os
+import json
 
 from core.config import settings
+
+UPLOAD_DIR = './uploads'
 
 class Gemini:
     def __init__(self):
         genai.configure(api_key=settings.gemini_key)
         self.client = genai.GenerativeModel("gemini-1.5-flash")
+        print("Gemini init")
 
     @retry(tries=3, delay=1, backoff=1)
     def completions(self, user_id, chat_completion):
         model = chat_completion.model
         messages = chat_completion.messages
-        history_chats = []
-        self.client = genai.GenerativeModel(model)
-        for msg in messages[:-1]:
-            t = self.claude2gemini(msg)
-            history_chats.append(t)
 
+        for msg in messages:
+            if not isinstance(msg['parts'], list):
+                continue
+            for _pt in msg['parts']:
+                if "inline_data" in _pt and _pt['inline_data']['data'].startswith('http'):
+                    image = httpx.get(_pt['inline_data']['data'])
+                    _pt['inline_data']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
+                if "file_data" in _pt:
+                    file_path = os.path.join(UPLOAD_DIR, _pt['file_data']['file_uri'])
+                    myfile = genai.upload_file(file_path)
+                    _pt['file_data']['file_uri'] = myfile.uri
+
+        history_chats = messages[:-1]
+        self.client = genai.GenerativeModel(model)
         chat = self.client.start_chat(
             history=history_chats,
         )
         response = chat.send_message(
-            self.claude2gemini(messages[-1]),
-            generation_config=genai.GenerationConfig(
-                response_mime_type="application/json",
-            ),
+            # self.claude2gemini(messages[-1]),
+            messages[-1],
             stream=True,
         )
         for chunk in response:
-            yield chunk.text
+            yield json.dumps(chunk.to_dict())
 
 
     def claude2gemini(self, msg):
