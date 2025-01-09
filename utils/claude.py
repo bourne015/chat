@@ -100,6 +100,9 @@ class Claude:
                 if _ct['type'] == "image" and _ct['source']['data'].startswith('http'):
                     image = httpx.get(_ct['source']['data'])
                     _ct['source']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
+                elif _ct['type'] == "document":
+                    image = httpx.get(_ct['source']['data'])
+                    _ct['source']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
 
         tools = chat_completion.tools
         stream = True
