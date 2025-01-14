@@ -3,11 +3,11 @@ from retry import retry
 import httpx
 import base64
 import os
+import io
 import json
 
 from core.config import settings
 
-UPLOAD_DIR = './uploads'
 
 class Gemini:
     def __init__(self):
@@ -28,8 +28,9 @@ class Gemini:
                     image = httpx.get(_pt['inline_data']['data'])
                     _pt['inline_data']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
                 if "file_data" in _pt:
-                    file_path = os.path.join(UPLOAD_DIR, _pt['file_data']['file_uri'])
-                    myfile = genai.upload_file(file_path)
+                    file_url = _pt["file_data"]["file_uri"]
+                    doc_data = io.BytesIO(httpx.get(file_url).content)
+                    myfile = genai.upload_file(doc_data, mime_type=_pt["file_data"]["mime_type"])
                     _pt['file_data']['file_uri'] = myfile.uri
 
         history_chats = messages[:-1]
