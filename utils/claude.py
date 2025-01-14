@@ -101,8 +101,8 @@ class Claude:
                     image = httpx.get(_ct['source']['data'])
                     _ct['source']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
                 elif _ct['type'] == "document":
-                    image = httpx.get(_ct['source']['data'])
-                    _ct['source']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
+                    docData = httpx.get(_ct['source']['data'])
+                    _ct['source']['data'] = base64.standard_b64encode(docData.content).decode('utf-8')
 
         tools = chat_completion.tools
         stream = True
