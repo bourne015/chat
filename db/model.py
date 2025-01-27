@@ -28,6 +28,7 @@ class User(Base):
     avatar = Column(String, comment="user avatar")
     avatar_bot = Column(String, comment="bot avatar")
     pwd = Column(String(200), comment="password", nullable=False)
+    cat_id = Column(String(50), comment="thread is of cat assistant", default=None)
     created_at = Column(Integer(), default=None)
     updated_at = Column(Integer(), default=None)
     credit = Column(Float(), comment="credit balance", default=0.0)

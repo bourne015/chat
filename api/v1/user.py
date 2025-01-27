@@ -26,6 +26,7 @@ class UserData(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     pwd: Optional[str] = None
+    cat_id: Optional[str] = None
     avatar: Optional[str] = None
     avatar_bot: Optional[str] = None
     credit: Optional[float] = 0.0
@@ -48,6 +49,7 @@ async def user_new(user: UserData) -> Any:
             avatar=user.avatar,
             avatar_bot=user.avatar_bot,
             pwd=hash_pwd,
+            cat_id=user.cat_id,
             created_at=created_at,
             updated_at=updated_at,
             credit=user.credit,
@@ -79,6 +81,7 @@ async def user_get(
         "phone": db_user.phone,
         "avatar": db_user.avatar,
         "avatar_bot": db_user.avatar_bot,
+        "cat_id": db_user.cat_id,
         "credit": db_user.credit,
         "updated_at": db_user.updated_at,
     }
@@ -99,6 +102,8 @@ async def user_edit(user_id: int, user: UserData) -> Any:
             new_data["avatar"] = user.avatar
         if user.avatar_bot:
             new_data["avatar_bot"] = user.avatar_bot
+        if user.cat_id:
+            new_data["cat_id"] = user.cat_id
         if user.credit:
             new_data["credit"] = user.credit
         new_data["updated_at"] = int(time.time())
@@ -129,6 +134,7 @@ async def user_info(user_id: int) -> Any:
         "phone": db_user.phone,
         "avatar": db_user.avatar,
         "avatar_bot": db_user.avatar_bot,
+        "cat_id": db_user.cat_id,
         "credit": db_user.credit,
         "updated_at": db_user.updated_at,
     }

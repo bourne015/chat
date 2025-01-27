@@ -53,6 +53,7 @@ class UserDBConnectorComponent(DBConnectorComponent):
                     avatar_bot=kwargs.get("avatar_bot", "assets/images/bot/bot7.png"),
                     credit=kwargs.get("credit", 0.0),
                     pwd=kwargs.get("pwd"),
+                    cat_id=kwargs.get("cat_id", 0.0),
                     created_at=kwargs.get("created_at"),
                     updated_at=kwargs.get("updated_at"),
                     active=True
@@ -69,7 +70,7 @@ class UserDBConnectorComponent(DBConnectorComponent):
         def thd(conn):
             update_columns = [
                 "name", "email", "phone", "avatar", "credit", "pwd",
-                "avatar_bot", "created_at", "updated_at", "credit",
+                "cat_id", "avatar_bot", "created_at", "updated_at", "credit",
             ]
             user = conn.query(self.tbl).filter(
                 self.tbl.id == user_id).first()
