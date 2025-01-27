@@ -171,6 +171,10 @@ class Assistant:
         thread = self.client.beta.threads.create()
         return thread.id
 
+    def retrive_thread(self, thread_id):
+        thd = self.client.beta.threads.retrieve(thread_id)
+        return thd
+
     def delete_thread(self, thread_id: str) -> str:
         del_status = self.client.beta.threads.delete(thread_id)
         return del_status.deleted

@@ -213,6 +213,18 @@ async def create_thread() -> Any:
     return JSONResponse(content={"id": thread_id}, status_code=200)
 
 
+@router.post("/assistant/threads/{thread_id}", name="retrive thread")
+async def retrive_thread(thread_id: str) -> Any:
+    """
+    retrive a threads
+    """
+    try:
+        thd = assistant.retrive_thread(thread_id)
+    except Exception as err:
+        log.debug(f"retrive_thread error:{err}")
+        return JSONResponse(status_code=500, content={"result": str(err)}) 
+    return JSONResponse(content={"thread": {"id": thd.id, "created_at": thd.created_at}}, status_code=200)
+
 @router.delete("/assistant/threads/{thread_id}", name="create thread")
 async def delete_thread(thread_id: str) -> Any:
     """
