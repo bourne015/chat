@@ -16,9 +16,10 @@ class Gemini:
         print("Gemini init")
 
     @retry(tries=3, delay=1, backoff=1)
-    def completions(self, user_id, chat_completion):
+    async def completions(self, user_id, chat_completion):
         model = chat_completion.model
         messages = chat_completion.messages
+        g_config = {'thinking_config': {'include_thoughts': True}}
 
         for msg in messages:
             if not isinstance(msg['parts'], list):

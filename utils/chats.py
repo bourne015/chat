@@ -45,31 +45,16 @@ class Chat:
             return self.deepseek
         return self.gpt
 
-    def ask(self, user_id, prompt, model, stream = False):
+    async def ask(self, user_id, prompt, model, stream = False):
         '''
         prompt without context
         '''
         org = self.get_org(model)
-        res = org.ask(user_id, prompt, model, stream=stream)
+        res = await org.ask(user_id, prompt, model, stream=stream)
 
         return res
 
-    def asks(self, user_id, prompt_list, model, stream = True):
-        '''
-        question with context
-        prompt_list store a session of prompts and answers
-        '''
-        org = self.get_org(model)
-        if model in self.claude.supported_models and prompt_list and prompt_list[0]['role'] == "system":
-            prompt_list[0]['role'] = "user"
-            # there's no system role in Claude, use system paramater instead
-            # don't use system prompt in this mement
-            # system_prompt = prompt_list[0]['content'] 
-        res = org.asks(user_id, prompt_list, model, stream=stream)
-
-        return res
-
-    def completions(self, user_id, chat_completion):
+    async def completions(self, user_id, chat_completion):
         '''
         question with context
         prompt_list store a session of prompts and answers

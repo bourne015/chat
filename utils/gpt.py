@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 import tiktoken
 from retry import retry
 
@@ -25,19 +25,19 @@ class GPT:
 
     def __init__(self) -> None:
         self.model = self.supported_models[0]
-        self.client = OpenAI(api_key=settings.openai_key)
+        self.client = AsyncOpenAI(api_key=settings.openai_key)
         self.credit = Credit()
         print("Chat init: ", self.model)
 
     @retry(tries=3, delay=1, backoff=1)
-    def ask(self, user_id, question, model, stream = False):
+    async def ask(self, user_id, question, model, stream = False):
         '''
         question without context
         '''
         if model not in self.supported_models:
             model = self.supported_models[0]
 
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": question}],
             stream=stream
@@ -52,33 +52,7 @@ class GPT:
         return response.choices[0].message.content
 
     @retry(tries=3, delay=1, backoff=1)
-    def asks(self, user_id, prompt_list, model, stream = True):
-        '''
-        question with context
-        prompt_list store a session of prompts and answers
-        '''
-        if model not in self.supported_models:
-            model = self.supported_models[1]
-
-        input_tokens = output_tokens = 0
-        response = self.client.chat.completions.create(
-            model=model,
-            messages=prompt_list,
-            max_tokens=4096,
-            stream_options={"include_usage": True},
-            stream=stream
-        )
-        for chunk in response:
-            if not chunk.choices and getattr(chunk, 'usage', None):
-                input_tokens = chunk.usage.prompt_tokens
-                output_tokens = chunk.usage.completion_tokens
-                break
-            chunk_message = chunk.choices[0].delta.content
-            yield chunk_message
-        self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
-
-    @retry(tries=3, delay=1, backoff=1)
-    def completions(self, user_id, chat_completion):
+    async def completions(self, user_id, chat_completion):
         '''
         question with context
         prompt_list store a session of prompts and answers
@@ -91,7 +65,7 @@ class GPT:
         #     model = self.supported_models[1]
 
         input_tokens = output_tokens = 0
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             model=model,
             messages=messages,
             tools=tools if tools else None,
@@ -99,7 +73,7 @@ class GPT:
             stream_options={"include_usage": True},
             stream=stream
         )
-        for chunk in response:
+        async for chunk in response:
             if not chunk.choices and getattr(chunk, 'usage', None):
                 input_tokens = chunk.usage.prompt_tokens
                 output_tokens = chunk.usage.completion_tokens

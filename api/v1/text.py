@@ -38,7 +38,7 @@ async def ask(data: ModelPrompt, user_id: int) -> Any:
     question = data.question
     #log.debug(f"model: {model}, Q: {question}")
     try:
-        answer = chat.ask(user_id, question, model)
+        answer = await chat.ask(user_id, question, model)
     except Exception as e:
         log.error(f"err: {e}")
         return JSONResponse(status_code=500, content=str(e))
@@ -61,10 +61,8 @@ async def ask_stream(data: ModelPrompts, user_id: int) -> Any:
         log.debug(f"stream: {model}, Q: {content[0].get('text')}")
     async def event_generator():
         try:
-            answer = chat.asks(user_id, question, model, stream = True)
-            for text in answer:
-                if text:
-                    yield text
+            async for text in await chat.asks(user_id, question, model, stream = True):
+                yield text
                 #await asyncio.sleep(0.01)
         except Exception as err:
             log.debug(err)
@@ -87,8 +85,7 @@ async def asks_stream(data: ChatCompletion, user_id: int) -> Any:
         log.debug(f"stream: {model}, Q: {content[0].get('text')}")
     async def event_generator():
         try:
-            answer = chat.completions(user_id, data)
-            for text in answer:
+            async for text in await chat.completions(user_id, data):
                 yield text
         except Exception as err:
             log.debug(err)

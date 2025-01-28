@@ -24,19 +24,19 @@ class Claude:
 
     def __init__(self) -> None:
         self.model = self.supported_models[0]
-        self.client = anthropic.Anthropic(api_key=settings.claude_key)
+        self.client = anthropic.AsyncAnthropic(api_key=settings.claude_key)
         self.credit = Credit()
         print("claude init: ", self.model)
 
     @retry(tries=3, delay=1, backoff=1)
-    def ask(self, user_id, prompt, model, stream = False):
+    async def ask(self, user_id, prompt, model, stream = False):
         '''
         question without context
         '''
         if model not in self.supported_models:
             model = self.supported_models[0]
 
-        response = self.client.messages.create(
+        response = await self.client.messages.create(
             model=model,
             max_tokens=4096,
             messages=[{"role": "user", "content": prompt}],
@@ -52,31 +52,7 @@ class Claude:
         return response.content[0].text
 
     @retry(tries=3, delay=1, backoff=1)
-    def asks(self, user_id, prompt_list, model, stream = True):
-        '''
-        question with context
-        prompt_list store a session of prompts and answers
-        '''
-        if model not in self.supported_models:
-            model = self.supported_models[1]
-
-        input_tokens = output_tokens = 0
-        with self.client.messages.stream(
-            model=model,
-            messages=prompt_list,
-            max_tokens=4096,
-        ) as stream:
-            for text in stream.text_stream:
-                yield text
-
-        message = stream.get_final_message()
-        if getattr(message, 'usage', None):
-            input_tokens = getattr(message.usage, 'input_tokens', 0)
-            output_tokens = getattr(message.usage, 'output_tokens', 0)
-        self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
-
-    @retry(tries=3, delay=1, backoff=1)
-    def completions(self, user_id, chat_completion):
+    async def completions(self, user_id, chat_completion):
         '''
         question with context
         prompt_list store a session of prompts and answers
@@ -111,7 +87,7 @@ class Claude:
 
         input_tokens = output_tokens = 0
         # with self.client.messages.stream(
-        resp = self.client.messages.create(
+        resp = await self.client.messages.create(
             model=model,
             messages=messages,
             system=system_prompt,
@@ -119,7 +95,7 @@ class Claude:
             max_tokens=4096,
             stream=stream,
             )
-        for x in resp:
+        async for x in resp:
             if getattr(x, 'usage', None):
                 input_tokens = getattr(x.usage, 'input_tokens', 0)
                 output_tokens = getattr(x.usage, 'output_tokens', 0)
