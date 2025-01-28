@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from retry import retry
 import httpx
 import base64
@@ -11,8 +12,7 @@ from core.config import settings
 
 class Gemini:
     def __init__(self):
-        genai.configure(api_key=settings.gemini_key)
-        self.client = genai.GenerativeModel("gemini-1.5-flash")
+        self.client = genai.Client(api_key=settings.gemini_key)
         print("Gemini init")
 
     @retry(tries=3, delay=1, backoff=1)
@@ -33,20 +33,17 @@ class Gemini:
                     doc_data = io.BytesIO(httpx.get(file_url).content)
                     myfile = genai.upload_file(doc_data, mime_type=_pt["file_data"]["mime_type"])
                     _pt['file_data']['file_uri'] = myfile.uri
-
         history_chats = messages[:-1]
-        self.client = genai.GenerativeModel(model)
-        chat = self.client.start_chat(
+        chat = self.client.aio.chats.create(
+            model=model,
             history=history_chats,
         )
-        response = chat.send_message(
+        response = chat.send_message_stream(
             # self.claude2gemini(messages[-1]),
             messages[-1],
-            stream=True,
         )
-        for chunk in response:
-            yield json.dumps(chunk.to_dict())
-
+        async for chunk in response:
+            yield chunk.model_dump_json(exclude_unset=True)
 
     def claude2gemini(self, msg):
         '''
