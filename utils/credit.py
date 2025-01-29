@@ -18,13 +18,14 @@ class Credit:
         "o1":                   {"input": 15.0, "output": 60.0},
         "o1-mini":              {"input": 3.00, "output": 12.0},
         "dall-e-3":             {"input": 10.0, "output": 30.0},
-        "claude-3-haiku-20240307":  {"input": 0.25, "output": 1.25},
+        "claude-3-haiku-20240307":    {"input": 0.25, "output": 1.25},
         "claude-3-5-haiku-20241022":  {"input": 0.8, "output": 4.0},
-        "claude-3-sonnet-20240229": {"input": 3.0, "output": 15.0},
+        "claude-3-sonnet-20240229":   {"input": 3.0, "output": 15.0},
         "claude-3-5-sonnet-20240620": {"input": 3.0, "output": 15.0},
         "claude-3-5-sonnet-20241022": {"input": 3.0, "output": 15.0},
         "claude-3-opus-20240229":     {"input": 15.0, "output": 75.0},
-        "deepseek-chat":              {"input": 0.10, "output": 2.00}, # not dollar
+        "deepseek-chat":              {"input": 0.27, "output": 1.10},
+        "deepseek-reasoner":          {"input": 0.55, "output": 2.19},
         "gemini-1.5-pro":             {"input": 0.10, "output": 0.10}, # free
         "gemini-2.0-flash-exp":       {"input": 0.10, "output": 0.10}, # free
     }
