@@ -66,8 +66,8 @@ class Chat:
 
         return res
 
-    def gen_image(self, user_id, prompt, model = 'dall-e-3'):
-        res = self.gpt.gen_image(user_id, prompt=prompt, model=model)
+    async def gen_image(self, user_id, prompt, model = 'dall-e-3'):
+        res = await self.gpt.gen_image(user_id, prompt=prompt, model=model)
 
         return res
 

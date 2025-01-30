@@ -103,7 +103,7 @@ async def image(data: ModelPrompt, user_id: int) -> Any:
     log.debug(f"image model: {model}, Q: {question}")
     #log.debug(f"image model: {model}")
     try:
-        answer = chat.gen_image(user_id, question, model)
+        answer = await chat.gen_image(user_id, question, model)
     except Exception as e:
         log.error(f"err: {e}")
         return JSONResponse(status_code=500, content=str(e))

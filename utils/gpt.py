@@ -82,12 +82,12 @@ class GPT:
         self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
 
 
-    def gen_image(self, user_id, prompt, model = 'dall-e-3'):
+    async def gen_image(self, user_id, prompt, model = 'dall-e-3'):
         """
         generate image
         DALL·E 3  Standard 1024*1024 = $0.040 / image
         """
-        response = self.client.images.generate(
+        response = await self.client.images.generate(
             model=model,
             prompt=prompt,
             size="1024x1024",
