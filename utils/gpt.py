@@ -65,14 +65,16 @@ class GPT:
         #     model = self.supported_models[1]
 
         input_tokens = output_tokens = 0
-        response = await self.client.chat.completions.create(
-            model=model,
-            messages=messages,
-            tools=tools if tools else None,
-            max_tokens=4096,
-            stream_options={"include_usage": True},
-            stream=stream
-        )
+        params = {
+            "model": model,
+            "messages": messages,
+            "max_completion_tokens": 4096,
+            "stream_options": {"include_usage": True},
+            "stream": stream
+        }
+        if tools:
+            params["tools"] = tools
+        response = await self.client.chat.completions.create(**params)
         async for chunk in response:
             if not chunk.choices and getattr(chunk, 'usage', None):
                 input_tokens = chunk.usage.prompt_tokens
