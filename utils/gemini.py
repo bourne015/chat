@@ -16,6 +16,15 @@ class Gemini:
         print("Gemini init")
 
     @retry(tries=3, delay=1, backoff=1)
+    async def ask(self, user_id, question, model, stream = False):
+        '''
+        chat without context
+        '''
+        chat = self.client.aio.chats.create(model=model)
+        response = await chat.send_message(question)
+        return response.text
+
+    @retry(tries=3, delay=1, backoff=1)
     async def completions(self, user_id, chat_completion):
         model = chat_completion.model
         messages = chat_completion.messages
