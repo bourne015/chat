@@ -68,7 +68,7 @@ class DeepSeek:
                 stream=stream
             )
         async for chunk in response:
-            if not chunk.choices and getattr(chunk, 'usage', None):
+            if getattr(chunk, 'usage', None):
                 input_tokens = chunk.usage.prompt_tokens
                 output_tokens = chunk.usage.completion_tokens
                 break

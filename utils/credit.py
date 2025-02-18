@@ -26,8 +26,9 @@ class Credit:
         "claude-3-opus-20240229":     {"input": 15.0, "output": 75.0},
         "deepseek-chat":              {"input": 0.27, "output": 1.10},
         "deepseek-reasoner":          {"input": 0.55, "output": 2.19},
-        "gemini-1.5-pro":             {"input": 0.10, "output": 0.10}, # free
-        "gemini-2.0-flash-exp":       {"input": 0.10, "output": 0.10}, # free
+        "gemini-1.5-pro":             {"input": 12.50, "output": 5.00}, # free
+        "gemini-2.0-flash-exp":       {"input": 0.10, "output": 0.40}, # free
+        "gemini-2.0-flash-001":       {"input": 0.10, "output": 0.40}, # free
     }
     defalt_price = {"input": 10.0, "output": 30.0}
 
