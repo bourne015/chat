@@ -33,23 +33,31 @@ class Gemini:
         for msg in messages:
             if not isinstance(msg['parts'], list):
                 continue
-            for _pt in msg['parts']:
+            for i, _pt in enumerate(msg['parts']):
                 if "inline_data" in _pt and _pt['inline_data']['data'].startswith('http'):
                     image = httpx.get(_pt['inline_data']['data'])
-                    _pt['inline_data']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
+                    # _pt['inline_data']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
+                    msg['parts'][i] = types.Part.from_bytes(image.content, _pt['inline_data']['mime_type'])
                 if "file_data" in _pt:
                     file_url = _pt["file_data"]["file_uri"]
                     doc_data = io.BytesIO(httpx.get(file_url).content)
-                    myfile = genai.upload_file(doc_data, mime_type=_pt["file_data"]["mime_type"])
+                    myfile = await self.client.aio.files.upload(
+                        path=doc_data,
+                        config=dict(mime_type=_pt["file_data"]["mime_type"])
+                    )
                     _pt['file_data']['file_uri'] = myfile.uri
-        history_chats = messages[:-1]
-        chat = self.client.aio.chats.create(
+        # history_chats = messages[:-1]
+        # chat = self.client.aio.chats.create(
+        #     model=model,
+        #     history=history_chats,
+        # )
+        # response = chat.send_message_stream(
+        #     # self.claude2gemini(messages[-1]),
+        #     messages[-1],
+        # )
+        response = self.client.aio.models.generate_content_stream(
             model=model,
-            history=history_chats,
-        )
-        response = chat.send_message_stream(
-            # self.claude2gemini(messages[-1]),
-            messages[-1],
+            contents=messages,
         )
         async for chunk in response:
             yield chunk.model_dump_json(exclude_unset=True)
