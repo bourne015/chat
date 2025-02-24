@@ -78,7 +78,7 @@ async def openai_file(file_name: str) -> Any:
     res = {}
     newfile = None
     try:
-        newfile = assistant.file_upload(file_name)
+        newfile = await assistant.file_upload(file_name)
         if newfile:
             res["id"] = newfile.id
             res["filename"] = newfile.filename
@@ -97,7 +97,7 @@ async def openai_file(file_id: str) -> Any:
     """
     deletedfile = None
     try:
-        deletedfile = assistant.file_delete(file_id)
+        deletedfile = await assistant.file_delete(file_id)
     except Exception as err:
         log.debug(f"delete file in openai error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})      
@@ -127,7 +127,7 @@ async def create_vs(vs: NewVectorStore) -> Any:
     """
     vector_store_id = None
     try:
-        vector_store_id = assistant.create_vs_with_files(vs.vs_name, vs.files)
+        vector_store_id = await assistant.create_vs_with_files(vs.vs_name, vs.files)
         if vector_store_id is None:
             return JSONResponse(status_code=500, content={"result": "failed"})
     except Exception as err:
@@ -143,7 +143,7 @@ async def delete_vs(vector_store_id: str) -> Any:
     """
     vs_del = None
     try:
-        vs_del = assistant.vs_delete(vector_store_id)
+        vs_del = await assistant.vs_delete(vector_store_id)
         if vs_del is None:
             return JSONResponse(status_code=500, content={"result": "failed"})
     except Exception as err:
@@ -162,7 +162,7 @@ async def create_vs_file(vector_store_id: str, file_name: str) -> Any:
     new_vsfile = None
     res = {}
     try:
-        new_vsfile = assistant.vs_upload_file(vector_store_id, file_name)
+        new_vsfile = await assistant.vs_upload_file(vector_store_id, file_name)
         if new_vsfile is not None:
             res["id"] = new_vsfile.id
             res["created_at"] = new_vsfile.created_at
@@ -178,7 +178,7 @@ async def get_vector_store_files(vector_store_id: str) -> Any:
     list vector store files
     """
     try:
-        vs_file = assistant.vector_store_files(vector_store_id)
+        vs_file = await assistant.vector_store_files(vector_store_id)
     except Exception as err:
         log.debug(f"vector_store_files error:{err}")
         return JSONResponse(content={"result": err}, status_code=200)
@@ -192,7 +192,7 @@ async def create_vs_file(vector_store_id: str, file_id: str) -> Any:
     """
     del_vsfile = None
     try:
-        del_vsfile = assistant.vs_delete_file(vector_store_id, file_id)
+        del_vsfile = await assistant.vs_delete_file(vector_store_id, file_id)
     except Exception as err:
         log.debug(f"vs delete file error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)}) 
@@ -206,7 +206,7 @@ async def create_thread() -> Any:
     """
     thread_id = None
     try:
-        thread_id = assistant.create_thread()
+        thread_id = await assistant.create_thread()
     except Exception as err:
         log.debug(f"create_thread error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)}) 
@@ -219,7 +219,7 @@ async def retrive_thread(thread_id: str) -> Any:
     retrive a threads
     """
     try:
-        thd = assistant.retrive_thread(thread_id)
+        thd = await assistant.retrive_thread(thread_id)
     except Exception as err:
         log.debug(f"retrive_thread error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)}) 
@@ -231,7 +231,7 @@ async def delete_thread(thread_id: str) -> Any:
     delete a threads
     """
     try:
-        del_status = assistant.delete_thread(thread_id)
+        del_status = await assistant.delete_thread(thread_id)
     except Exception as err:
         log.debug(f"delete_thread error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)}) 
@@ -251,16 +251,17 @@ async def create_message(
     """
     for x in msg.attachments:
         x.pop("downloading", None)
+        x.pop("file_name", None)
+        x.pop("file_url", None)
     log.debug(f"toassistantr: {msg}")
-    assistant.add_thread_message(
+    await assistant.add_thread_message(
         thread_id,
         msg.role,
         msg.content,
         msg.attachments)
     async def event_generator():
         try:
-            messages = assistant.runs(user_id, assistant_id, thread_id, msg.instructions)
-            for text in messages:
+            async for text in assistant.runs(user_id, assistant_id, thread_id, msg.instructions):
                 yield text
         except Exception as err:
             log.debug(err)

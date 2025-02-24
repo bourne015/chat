@@ -1,5 +1,5 @@
 from typing_extensions import override
-from openai import OpenAI, AssistantEventHandler
+from openai import AsyncOpenAI, AssistantEventHandler
 import tiktoken
 from retry import retry
 import os
@@ -27,7 +27,7 @@ class Assistant:
 
     def __init__(self) -> None:
         self.model = self.supported_models[0]
-        self.client = OpenAI(api_key=settings.openai_key)
+        self.client = AsyncOpenAI(api_key=settings.openai_key)
         self.credit = Credit()
         print("assistant init: ", self.model)
 
@@ -48,25 +48,25 @@ class Assistant:
         else:
             return []
     
-    def file_upload(self, file_name: str, purpose: str="assistants"):
+    async def file_upload(self, file_name: str, purpose: str="assistants"):
         """
         upload a file
         purpose: ['fine-tune', 'assistants', 'batch',
                 'user_data', 'responses', 'vision']
         """
         file_path = os.path.join(UPLOAD_DIR, file_name)
-        newfile = self.client.files.create(
+        newfile = await self.client.files.create(
             file=open(file_path, "rb"),
             purpose=purpose)
         return newfile
     
-    def file_delete(self, file_id: str):
-        self.client.files.delete(file_id)
+    async def file_delete(self, file_id: str):
+        await self.client.files.delete(file_id)
 
     async def file_download(self, file_id: str, file_name: str):
         try:
             print("file_download")
-            file_data = self.client.files.content(file_id)
+            file_data = await self.client.files.content(file_id)
             file_data_bytes = file_data.read()
             with open(os.path.join(UPLOAD_DIR, file_name), "wb") as file:
                 file.write(file_data_bytes)
@@ -74,14 +74,14 @@ class Assistant:
             log.debug(f"file_download error: {err}")
             return err.body
 
-    def create_vs_with_files(self, vector_store_name: str="", files_name: list=[]) -> str:
+    async def create_vs_with_files(self, vector_store_name: str="", files_name: list=[]) -> str:
         """
         upload a list of files to openai vector stores
         """
         try:
-            vector_store = self.client.beta.vector_stores.create(name=vector_store_name)
+            vector_store = await self.client.beta.vector_stores.create(name=vector_store_name)
             file_streams = [open(os.path.join(UPLOAD_DIR, path), "rb") for path in files_name]
-            file_batch = self.client.beta.vector_stores.file_batches.upload_and_poll(
+            file_batch = await self.client.beta.vector_stores.file_batches.upload_and_poll(
                 vector_store_id=vector_store.id, files=file_streams
             )
         except Exception as err:
@@ -89,13 +89,13 @@ class Assistant:
             return None
         return vector_store.id
 
-    def vector_store_files(self, vs_id: str) -> list:
+    async def vector_store_files(self, vs_id: str) -> list:
         """
         List vector store files
         """
         res = []
         try:
-            vs_files = self.client.beta.vector_stores.files.list(
+            vs_files = await self.client.beta.vector_stores.files.list(
                 vector_store_id=vs_id
             )
             if vs_files is None:
@@ -106,35 +106,35 @@ class Assistant:
             log.debug(f"vector_store_files error: {err}")
         return res
 
-    def vs_delete(self, vector_store_id: str):
+    async def vs_delete(self, vector_store_id: str):
         """
         delete vector store
         """
-        deleted_vector_store = self.client.beta.vector_stores.delete(
+        deleted_vector_store = await self.client.beta.vector_stores.delete(
             vector_store_id=vector_store_id)
         return deleted_vector_store.deleted
 
-    def vs_upload_file(self, vector_store_id: str, file_name: str):
+    async def vs_upload_file(self, vector_store_id: str, file_name: str):
         """
         Create a vector store file by attaching a File to a vector store.
         upload a file and then create in vector store
         """
-        newfile = self.file_upload(file_name)
-        vector_store_file = self.client.beta.vector_stores.files.create(
+        newfile = await self.file_upload(file_name)
+        vector_store_file = await self.client.beta.vector_stores.files.create(
             vector_store_id=vector_store_id,
             file_id=newfile.id)
         return vector_store_file
 
-    def vs_delete_file(self, vector_store_id: str, fild_id: str):
+    async def vs_delete_file(self, vector_store_id: str, fild_id: str):
         """
         delete a file from vector store
         """
-        deleted_vs_file = self.client.beta.vector_stores.files.delete(
+        deleted_vs_file = await self.client.beta.vector_stores.files.delete(
             vector_store_id=vector_store_id,
             file_id=fild_id
         )
 
-    def create_assistant(self,
+    async def create_assistant(self,
             name="assistant",
             description="",
             instructions="you are a helpful assistant",
@@ -145,7 +145,7 @@ class Assistant:
         """
         creat an assistant
         """
-        assistant = self.client.beta.assistants.create(
+        assistant = await self.client.beta.assistants.create(
             name=name,
             description=description,
             instructions=instructions,
@@ -156,30 +156,30 @@ class Assistant:
         )
         return assistant
     
-    def update_assistant(self, assistant_id, **kwargs):
+    async def update_assistant(self, assistant_id, **kwargs):
         print("uuuuupdate: ", kwargs)
-        my_updated_assistant = self.client.beta.assistants.update(
+        my_updated_assistant = await self.client.beta.assistants.update(
             assistant_id,
             **kwargs
         )
 
-    def delete_assistant(self, assistant_id: str):
-        res = self.client.beta.assistants.delete(assistant_id)
+    async def delete_assistant(self, assistant_id: str):
+        res = await self.client.beta.assistants.delete(assistant_id)
         return res
 
-    def create_thread(self) -> str:
-        thread = self.client.beta.threads.create()
+    async def create_thread(self) -> str:
+        thread = await self.client.beta.threads.create()
         return thread.id
 
-    def retrive_thread(self, thread_id):
-        thd = self.client.beta.threads.retrieve(thread_id)
+    async def retrive_thread(self, thread_id):
+        thd = await self.client.beta.threads.retrieve(thread_id)
         return thd
 
-    def delete_thread(self, thread_id: str) -> str:
-        del_status = self.client.beta.threads.delete(thread_id)
+    async def delete_thread(self, thread_id: str) -> str:
+        del_status = await self.client.beta.threads.delete(thread_id)
         return del_status.deleted
 
-    def add_thread_message(self,
+    async def add_thread_message(self,
             thread_id: str,
             role: str,
             message: str|list,
@@ -188,7 +188,7 @@ class Assistant:
         create a message
         """
         try:
-            self.client.beta.threads.messages.create(
+            await self.client.beta.threads.messages.create(
                 thread_id=thread_id,
                 role=role,
                 content=message,
@@ -197,7 +197,7 @@ class Assistant:
         except Exception as err:
             log.debug(f"add_thread_message error: {err}")
     
-    def runs(self, user_id: int, assistant_id: str, thread_id: str, instructions: str=None):
+    async def runs(self, user_id: int, assistant_id: str, thread_id: str, instructions: str=None):
         """
         run a thread.
         instructions paramater will update assistant instructions
@@ -208,12 +208,12 @@ class Assistant:
             params["instructions"] = instructions
         #params["response_format"] = { "type": "json_object" }
         input_tokens = output_tokens = 0
-        with self.client.beta.threads.runs.stream(
+        async with self.client.beta.threads.runs.stream(
             thread_id=thread_id,
             assistant_id=assistant_id,
             **params,
         ) as stream:
-            for event in stream:
+            async for event in stream:
                 if (event and
                     "thread.run.step" == event.event[:15] and
                     getattr(event.data, 'usage', None)):
@@ -222,7 +222,7 @@ class Assistant:
                 yield event.model_dump_json(exclude_unset=True)
         self.credit.from_tokens(user_id, "gpt-4o", input_tokens, output_tokens)
 
-    def send_msg_and_run(self,
+    async def send_msg_and_run(self,
             assistant_id,
             thread_id,
             instructions,
