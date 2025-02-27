@@ -68,7 +68,7 @@ class GPT:
         params = {
             "model": model,
             "messages": messages,
-            "max_completion_tokens": 4096,
+            # "max_completion_tokens": 4096,
             "stream_options": {"include_usage": True},
             "stream": stream
         }
