@@ -55,12 +55,30 @@ class Gemini:
         #     # self.claude2gemini(messages[-1]),
         #     messages[-1],
         # )
-        response = self.client.aio.models.generate_content_stream(
-            model=model,
-            contents=messages,
-        )
+        params = {
+            "model": model,
+            "contents": messages,
+        }
+        tools, functions, gsearch = [], [], None
+        for t in chat_completion.tools:
+            if t.get("function_declarations"):
+                for func in t.get("function_declarations"):
+                    # functions.append(types.FunctionDeclaration(**func))
+                    func.pop("strict", None)
+                    functions.append(func)
+            if t.get("google_search") != None:
+                gsearch = types.Tool(google_search=types.GoogleSearch())
+        if functions:
+            tools.append(types.Tool(function_declarations=functions))
+        if gsearch:
+            tools.append(gsearch)
+        if tools:
+            params["config"] = types.GenerateContentConfig(
+                tools=tools,
+            )
+        response = await self.client.aio.models.generate_content_stream(**params)
         async for chunk in response:
-            yield chunk.model_dump_json(exclude_unset=True)
+            yield chunk.model_dump_json(exclude_unset=True, by_alias=True)
 
     def claude2gemini(self, msg):
         '''
