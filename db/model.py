@@ -52,6 +52,7 @@ class Chat(Base):
     thread_id = Column(String(), default=None)
     bot_id = Column(Integer(), default=None)
     artifact = Column(Boolean(), comment="enable artifact", default=False)
+    internet = Column(Boolean(), comment="enable internet", default=False)
 
 
 class Bot(Base):
