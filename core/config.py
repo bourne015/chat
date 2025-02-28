@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     oss_role_session_name: str
     oss_duration_seconds: int= 3600
 
+    google_search_key: str
+    google_search_cx: str
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
