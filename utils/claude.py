@@ -80,21 +80,23 @@ class Claude:
                     docData = httpx.get(_ct['source']['data'])
                     _ct['source']['data'] = base64.standard_b64encode(docData.content).decode('utf-8')
 
-        tools = chat_completion.tools
         stream = True
         # if model not in self.supported_models:
         #     model = self.supported_models[1]
 
         input_tokens = output_tokens = 0
+        params = {
+            "model": model,
+            "messages": messages,
+            "system": system_prompt,
+            "max_tokens": 4096,
+            "stream": stream,
+        }
+        if chat_completion.tools:
+            params["tools"] = chat_completion.tools
+            params["tool_choice"] = {"type": "auto"}
         # with self.client.messages.stream(
-        resp = await self.client.messages.create(
-            model=model,
-            messages=messages,
-            system=system_prompt,
-            tools=tools,
-            max_tokens=4096,
-            stream=stream,
-            )
+        resp = await self.client.messages.create(**params)
         async for x in resp:
             if getattr(x, 'usage', None):
                 input_tokens = getattr(x.usage, 'input_tokens', 0)
