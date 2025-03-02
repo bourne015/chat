@@ -56,7 +56,8 @@ class UserDBConnectorComponent(DBConnectorComponent):
                     cat_id=kwargs.get("cat_id", 0.0),
                     created_at=kwargs.get("created_at"),
                     updated_at=kwargs.get("updated_at"),
-                    active=True
+                    active=True,
+                    settings=kwargs.get("settings", {}),
                 )
                 conn.add(user)
                 conn.commit()
@@ -71,6 +72,7 @@ class UserDBConnectorComponent(DBConnectorComponent):
             update_columns = [
                 "name", "email", "phone", "avatar", "credit", "pwd",
                 "cat_id", "avatar_bot", "created_at", "updated_at", "credit",
+                "settings"
             ]
             user = conn.query(self.tbl).filter(
                 self.tbl.id == user_id).first()

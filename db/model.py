@@ -33,6 +33,7 @@ class User(Base):
     updated_at = Column(Integer(), default=None)
     credit = Column(Float(), comment="credit balance", default=0.0)
     active = Column(Boolean(), comment="whether the user is active", default=True)
+    settings = Column(JSON(), comment="user settings")
 
 
 class Chat(Base):

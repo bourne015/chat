@@ -31,6 +31,7 @@ class UserData(BaseModel):
     avatar_bot: Optional[str] = None
     credit: Optional[float] = 0.0
     active: Optional[bool] = True
+    settings: Optional[Dict] = {}
 
 
 @router.post("/user", name="add user")
@@ -53,6 +54,7 @@ async def user_new(user: UserData) -> Any:
             created_at=created_at,
             updated_at=updated_at,
             credit=user.credit,
+            settings=user.settings,
             )
     except Exception as err:
         log.debug(f"add user error:{err}")
@@ -84,6 +86,7 @@ async def user_get(
         "cat_id": db_user.cat_id,
         "credit": db_user.credit,
         "updated_at": db_user.updated_at,
+        "settings": db_user.settings,
     }
     return JSONResponse(status_code=200, content=res)
 
@@ -106,6 +109,9 @@ async def user_edit(user_id: int, user: UserData) -> Any:
             new_data["cat_id"] = user.cat_id
         if user.credit:
             new_data["credit"] = user.credit
+        if user.settings:
+            print("got user settings: ", user.settings)
+            new_data["settings"] = user.settings
         new_data["updated_at"] = int(time.time())
         user = db_client.user.update_user_by_id(
             user_id,
@@ -137,6 +143,7 @@ async def user_info(user_id: int) -> Any:
         "cat_id": db_user.cat_id,
         "credit": db_user.credit,
         "updated_at": db_user.updated_at,
+        "settings": db_user.settings,
     }
     return JSONResponse(status_code=200, content=res)
 
