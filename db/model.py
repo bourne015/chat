@@ -54,6 +54,7 @@ class Chat(Base):
     bot_id = Column(Integer(), default=None)
     artifact = Column(Boolean(), comment="enable artifact", default=False)
     internet = Column(Boolean(), comment="enable internet", default=False)
+    temperature = Column(Float(), comment="model temperature", default=None)
 
 
 class Bot(Base):

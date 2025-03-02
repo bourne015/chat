@@ -27,6 +27,7 @@ class chatData(BaseModel):
     bot_id: Optional[int] = None
     artifact: Optional[bool] = None
     internet: Optional[bool] = None
+    temperature: Optional[float] = None
 
 
 @router.post("/user/{user_id}/chat", name="add or edit chat page")
@@ -50,6 +51,8 @@ async def chat_new(user_id: int, chat: chatData) -> Any:
                 thread_id=chat.thread_id,
                 bot_id=chat.bot_id,
                 artifact=chat.artifact,
+                internet=chat.internet,
+                temperature=chat.temperature,
                 )
             log.debug(f"add chat: {chat_id}")
         else:
@@ -71,6 +74,8 @@ async def chat_new(user_id: int, chat: chatData) -> Any:
                 newdata["artifact"] = chat.artifact
             if chat.internet != None:
                 newdata["internet"] = chat.internet
+            if chat.temperature != None:
+                newdata["temperature"] = chat.temperature
             newdata["updated_at"] = int(time.time())
             chat_id = db_client.chat.update_chat_by_id(
                 chat.id,

@@ -197,15 +197,17 @@ class Assistant:
         except Exception as err:
             log.debug(f"add_thread_message error: {err}")
     
-    async def runs(self, user_id: int, assistant_id: str, thread_id: str, instructions: str=None):
+    async def runs(self, user_id: int, assistant_id: str, thread_id: str, message):
         """
         run a thread.
         instructions paramater will update assistant instructions
         """
         print("this is msg run")
         params = {}
-        if instructions:
-            params["instructions"] = instructions
+        if message.instructions:
+            params["instructions"] = message.instructions
+        if message.temperature != None:
+            params["temperature"] = message.temperature
         #params["response_format"] = { "type": "json_object" }
         input_tokens = output_tokens = 0
         async with self.client.beta.threads.runs.stream(

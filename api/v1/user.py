@@ -110,7 +110,6 @@ async def user_edit(user_id: int, user: UserData) -> Any:
         if user.credit:
             new_data["credit"] = user.credit
         if user.settings:
-            print("got user settings: ", user.settings)
             new_data["settings"] = user.settings
         new_data["updated_at"] = int(time.time())
         user = db_client.user.update_user_by_id(

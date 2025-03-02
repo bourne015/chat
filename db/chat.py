@@ -46,6 +46,7 @@ class ChatDBConnectorComponent(DBConnectorComponent):
                     bot_id=kwargs.get("bot_id"),
                     artifact=kwargs.get("artifact", False),
                     internet=kwargs.get("internet", False),
+                    temperature=kwargs.get("temperature"),
                 )
                 conn.add(chat)
                 conn.commit()
@@ -60,7 +61,7 @@ class ChatDBConnectorComponent(DBConnectorComponent):
             update_columns = [
                 "title", "contents", "model", "created_at", "updated_at",
                 "page_id", "assistant_id", "thread_id", "bot_id", "artifact",
-                "internet",
+                "internet", "temperature",
             ]
             chat = conn.query(self.tbl).filter(
                 self.tbl.id == chat_id).first()

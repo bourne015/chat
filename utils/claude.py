@@ -95,6 +95,9 @@ class Claude:
         if chat_completion.tools:
             params["tools"] = chat_completion.tools
             params["tool_choice"] = {"type": "auto"}
+        if chat_completion.temperature != None:
+            params["temperature"] = chat_completion.temperature / 2
+            log.debug(f"\033[31mtemperature: {chat_completion.temperature}\033[0m")
         # with self.client.messages.stream(
         resp = await self.client.messages.create(**params)
         async for x in resp:

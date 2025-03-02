@@ -8,7 +8,10 @@ import io
 import json
 
 from core.config import settings
+from utils import log
 
+
+log = log.Logger(__name__, clevel=log.logging.DEBUG)
 
 class Gemini:
     def __init__(self):
@@ -59,6 +62,8 @@ class Gemini:
             "model": model,
             "contents": messages,
         }
+        config = {}
+
         tools, functions, gsearch = [], [], None
         for t in chat_completion.tools:
             if t.get("function_declarations"):
@@ -73,9 +78,12 @@ class Gemini:
         if gsearch:
             tools.append(gsearch)
         if tools:
-            params["config"] = types.GenerateContentConfig(
-                tools=tools,
-            )
+            config["tools"] = tools
+        if chat_completion.temperature != None:
+            config["temperature"] = chat_completion.temperature
+            log.debug(f"\033[31mtemperature: {chat_completion.temperature}\033[0m")
+        if config:
+            params["config"] = types.GenerateContentConfig(**config)
         response = await self.client.aio.models.generate_content_stream(**params)
         async for chunk in response:
             yield chunk.model_dump_json(exclude_unset=True, by_alias=True)

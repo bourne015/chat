@@ -53,20 +53,25 @@ class DeepSeek:
         '''
         model = chat_completion.model
         messages = chat_completion.messages
-        tools = chat_completion.tools
         stream = True
         # if model not in self.supported_models:
         #     model = self.supported_models[1]
 
         input_tokens = output_tokens = 0
-        response = await self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                tools=tools if tools else None,
-                max_tokens=4096,
-                stream_options={"include_usage": True},
-                stream=stream
-            )
+        params = {
+            "model": model,
+            "messages": messages,
+            "max_tokens": 4096,
+            # "max_completion_tokens": 4096,
+            "stream_options": {"include_usage": True},
+            "stream": stream
+        }
+        if chat_completion.tools:
+            params["tools"] = chat_completion.tools
+        if chat_completion.temperature != None:
+            params["temperature"] = chat_completion.temperature
+            log.debug(f"\033[31mtemperature: {chat_completion.temperature}\033[0m")
+        response = await self.client.chat.completions.create(**params)
         async for chunk in response:
             if getattr(chunk, 'usage', None):
                 input_tokens = chunk.usage.prompt_tokens

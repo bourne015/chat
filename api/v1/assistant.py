@@ -261,7 +261,7 @@ async def create_message(
         msg.attachments)
     async def event_generator():
         try:
-            async for text in assistant.runs(user_id, assistant_id, thread_id, msg.instructions):
+            async for text in assistant.runs(user_id, assistant_id, thread_id, msg):
                 yield text
         except Exception as err:
             log.debug(err)

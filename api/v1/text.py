@@ -23,6 +23,7 @@ class ChatCompletion(BaseModel):
     model: str
     messages: List
     tools: Optional[list] = None
+    temperature: Optional[float] = None
 
 
 class ModelPrompt(BaseModel):
