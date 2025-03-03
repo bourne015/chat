@@ -32,13 +32,13 @@ class NewAssistant(BaseModel):
     code_interpreter: Optional[bool] = False
     code_interpreter_files: Optional[dict]  = {}
     functions: Optional[dict] = {}
-    temperature: Optional[float] = 1.0
 
 class NewMessage(BaseModel):
     role: str
     content: str|list
     instructions: Optional[str] = None
     attachments: Optional[list] = None
+    temperature: Optional[float] = 1.0
 
 
 @router.post("/files", name="uoload client file")
