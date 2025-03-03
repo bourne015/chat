@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import json
 import asyncio
 import requests
+from bs4 import BeautifulSoup
 
 from utils import log
 from core.config import settings
@@ -40,4 +41,29 @@ async def search_google(query: str, num_results: int = 10):
         # return {"results": formatted_results}
         return JSONResponse(status_code=200, content=formatted_results)
     else:
-        raise HTTPException(status_code=response.status_code, detail="Error fetching data from Google API")
+        raise JSONResponse(status_code=200, content=["Error fetching data from Google API"])
+
+
+@router.get("/fetch_webpage/")
+async def fetch_webpage(url: str):
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        print("fetch: ", url)
+        response = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # clear HTML
+        for tag in soup(["script", "style", "nav", "footer", "header"]):
+            tag.decompose()
+        # get text content
+        text = soup.get_text(separator="\n", strip=True)
+        # limit length
+        max_length = 5000
+        if len(text) > max_length:
+            text = text[:max_length] + "...(内容已截断)"
+
+        return JSONResponse(status_code=200, content=text)
+    except Exception as e:
+        JSONResponse(status_code=200, content=f"error:{str(e)}")
