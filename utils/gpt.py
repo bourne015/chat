@@ -72,9 +72,9 @@ class GPT:
             "stream_options": {"include_usage": True},
             "stream": stream
         }
-        if tools:
+        if tools and model != "o1-mini":
             params["tools"] = tools
-        if chat_completion.temperature != None:
+        if chat_completion.temperature != None and model != "o1-mini":
             params["temperature"] = chat_completion.temperature
             if params["temperature"] > 1.2:
                 # greater 1.2 will generate random characters
