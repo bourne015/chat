@@ -68,7 +68,8 @@ class DeepSeek:
         }
         if chat_completion.tools:
             params["tools"] = chat_completion.tools
-        if chat_completion.temperature != None:
+        if (chat_completion.temperature != None and
+            0 <= chat_completion.temperature <= 2.0):
             params["temperature"] = chat_completion.temperature
             log.debug(f"\033[31mtemperature: {chat_completion.temperature}\033[0m")
         response = await self.client.chat.completions.create(**params)

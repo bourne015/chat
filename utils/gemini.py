@@ -79,7 +79,8 @@ class Gemini:
             tools.append(gsearch)
         if tools:
             config["tools"] = tools
-        if chat_completion.temperature != None:
+        if (chat_completion.temperature != None and
+            0 <= chat_completion.temperature <= 2.0):
             config["temperature"] = chat_completion.temperature
             log.debug(f"\033[31mtemperature: {chat_completion.temperature}\033[0m")
         if config:

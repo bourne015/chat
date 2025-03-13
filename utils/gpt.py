@@ -74,11 +74,11 @@ class GPT:
         }
         if tools and model != "o1-mini":
             params["tools"] = tools
-        if chat_completion.temperature != None and model != "o1-mini":
-            params["temperature"] = chat_completion.temperature
-            if params["temperature"] > 1.2:
-                # greater 1.2 will generate random characters
-                params["temperature"] = 1.2
+        if (chat_completion.temperature != None and
+            0 <= chat_completion.temperature <= 2.0 and
+            model not in ["o3-mini", "o1-mini"]):
+            # greater than 1.2 will generate random characters
+            params["temperature"] = min(chat_completion.temperature, 1.15)
             log.debug(f"\033[31mtemperature: {chat_completion.temperature}\033[0m")
         response = await self.client.chat.completions.create(**params)
         async for chunk in response:
