@@ -62,6 +62,8 @@ class BotData(BaseModel):
             tool_resources=tool_resources,
             temperature=self.temperature,
         )
+        if self.model.startswith("o"):
+            op_data.pop("temperature")
         return op_data
 
 
@@ -74,7 +76,7 @@ async def bot_new(bot: BotData) -> Any:
             bot.model = "gpt-4o"
         bot_data = bot.dict()
         if bot.file_search or bot.code_interpreter:
-            new_assistant = assistant.create_assistant(
+            new_assistant = await assistant.create_assistant(
                 **(bot.to_openai_assistant())
             )
             if new_assistant:
@@ -124,32 +126,32 @@ async def bot_info(bot_id: int) -> Any:
 
 @router.post("/bot/{bot_id}", name="edit bot")
 async def bot_edit(bot_id: int, bot: BotData) -> Any:
-    new_bot = None
+    new_data = bot.dict()
     try:
-        new_data = bot.dict()
-        updated_at = int(time.time())
-        new_data["updated_at"] = updated_at
-        new_bot = db_client.bot.update_bot_by_id(
+        if bot.assistant_id:
+            if not bot.file_search and not bot.code_interpreter:
+                await assistant.delete_assistant(bot.assistant_id)
+                new_data["assistant_id"] = ""
+            else:
+                await assistant.update_assistant(
+                    bot.assistant_id,
+                    **(bot.to_openai_assistant()))
+        elif bot.file_search or bot.code_interpreter:
+            new_assistant = await assistant.create_assistant(
+                **(bot.to_openai_assistant()))
+            if new_assistant:
+                new_data["assistant_id"] = new_assistant.id
+
+        new_data["updated_at"] = int(time.time())
+        new_data = db_client.bot.update_bot_by_id(
             bot_id,
             **new_data,
         )
-        update_shares(updated_at)
-        if bot.assistant_id:
-            assistant.update_assistant(
-                bot.assistant_id,
-                **(bot.to_openai_assistant()))
-        elif bot.file_search or bot.code_interpreter:
-            new_assistant = assistant.create_assistant(
-                **(bot.to_openai_assistant()))
-            if new_assistant:
-                assistant_id = new_assistant.id
-                new_bot = db_client.bot.update_bot_by_id(
-                    bot_id,
-                    assistant_id=assistant_id)
+        update_shares(new_data["updated_at"])
     except Exception as err:
         log.debug(f"edit bot error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
-    return JSONResponse(status_code=200, content=new_bot)
+    return JSONResponse(status_code=200, content=new_data)
 
 
 @router.delete("/bot/{bot_id}", name="delete bot")
@@ -157,7 +159,7 @@ async def bot_delete(bot_id: int, assistant_id: str) -> Any:
     try:
         del_asst = None
         if assistant_id:
-            del_asst = assistant.delete_assistant(assistant_id)
+            del_asst = await assistant.delete_assistant(assistant_id)
             if del_asst and del_asst.deleted == True:
                 db_client.bot.delete_bot(bot_id=bot_id)
         else:

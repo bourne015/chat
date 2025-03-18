@@ -134,26 +134,11 @@ class Assistant:
             file_id=fild_id
         )
 
-    async def create_assistant(self,
-            name="assistant",
-            description="",
-            instructions="you are a helpful assistant",
-            model="gpt-4o",
-            tools: list=[],
-            tool_resources: list=None,
-            temperature=1.0):
+    async def create_assistant(self, **kwargs):
         """
         creat an assistant
         """
-        assistant = await self.client.beta.assistants.create(
-            name=name,
-            description=description,
-            instructions=instructions,
-            model=model,
-            tools=tools,
-            tool_resources=tool_resources,
-            temperature=temperature
-        )
+        assistant = await self.client.beta.assistants.create(**kwargs)
         return assistant
     
     async def update_assistant(self, assistant_id, **kwargs):
@@ -164,8 +149,10 @@ class Assistant:
         )
 
     async def delete_assistant(self, assistant_id: str):
-        res = await self.client.beta.assistants.delete(assistant_id)
-        return res
+        try:
+            await self.client.beta.assistants.delete(assistant_id)
+        except Exception as err:
+            log.error(f"delete_assistant error: {err}")
 
     async def create_thread(self) -> str:
         thread = await self.client.beta.threads.create()
