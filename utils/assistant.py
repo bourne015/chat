@@ -194,7 +194,7 @@ class Assistant:
         if message.instructions:
             params["instructions"] = message.instructions
         if (message.temperature != None and
-            0 <= chat_completion.temperature <= 2.0):
+            0 <= message.temperature <= 2.0):
             params["temperature"] = message.temperature
         #params["response_format"] = { "type": "json_object" }
         input_tokens = output_tokens = 0

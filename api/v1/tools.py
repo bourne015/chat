@@ -34,9 +34,9 @@ async def search_google(query: str, num_results: int = 10):
         formatted_results = []
         for result in results:
             formatted_results.append({
-                'title': result.get('title'),
-                'link': result.get('link'),
-                'snippet': result.get('snippet')
+                "title": result.get('title'),
+                "link": result.get('link'),
+                "snippet": result.get('snippet')
             })
         # return {"results": formatted_results}
         return JSONResponse(status_code=200, content=formatted_results)
@@ -60,7 +60,7 @@ async def fetch_webpage(url: str):
         # get text content
         text = soup.get_text(separator="\n", strip=True)
         # limit length
-        max_length = 5000
+        max_length = 10240
         if len(text) > max_length:
             text = text[:max_length] + "...(内容已截断)"
 
