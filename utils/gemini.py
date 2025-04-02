@@ -64,19 +64,18 @@ class Gemini:
         }
         config = {}
 
-        tools, functions, gsearch = [], [], None
+        tools, functions = [], []
         for t in chat_completion.tools:
             if t.get("function_declarations"):
                 for func in t.get("function_declarations"):
                     # functions.append(types.FunctionDeclaration(**func))
                     func.pop("strict", None)
                     functions.append(func)
-            if t.get("google_search") != None:
-                gsearch = types.Tool(google_search=types.GoogleSearch())
+            #if t.get("google_search") != None:
+            #    tools.append(types.Tool(google_search=types.GoogleSearchRetrieval))
+                #tools.append(types.Tool(google_search=types.GoogleSearch()))
         if functions:
             tools.append(types.Tool(function_declarations=functions))
-        if gsearch:
-            tools.append(gsearch)
         if tools:
             config["tools"] = tools
         if (chat_completion.temperature != None and
