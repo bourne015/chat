@@ -6,13 +6,15 @@ from sse_starlette.sse import EventSourceResponse
 from fastapi.responses import StreamingResponse
 import json
 import asyncio
+import logging
 
 from utils import chat
-from utils import log
 
 
 router = APIRouter()
-log = log.Logger(__name__, clevel=log.logging.DEBUG)
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 class ModelPrompts(BaseModel):
     model: str
@@ -81,15 +83,15 @@ async def asks_stream(data: ChatCompletion, user_id: int) -> Any:
     tools = data.tools
     content = question[-1].get('content') if question else None
     if type(content) == str:
-        log.debug(f"stream: {model}, Q: {content}")
+        log.info(f"stream: {model}, Q: {content}")
     elif type(content) == list:
-        log.debug(f"stream: {model}, Q: {content[0].get('text')}")
+        log.info(f"stream: {model}, Q: {content[0].get('text')}")
     async def event_generator():
         try:
             async for text in await chat.completions(user_id, data):
                 yield text
         except Exception as err:
-            log.debug(err)
+            log.error(f"Unexpected error: {err}")
             yield err
     return EventSourceResponse(event_generator())
     #return  StreamingResponse(event_generator(), media_type="text/event-stream")

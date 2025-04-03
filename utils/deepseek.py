@@ -61,7 +61,7 @@ class DeepSeek:
         params = {
             "model": model,
             "messages": messages,
-            "max_tokens": 4096,
+            "max_tokens": 8000,
             # "max_completion_tokens": 4096,
             "stream_options": {"include_usage": True},
             "stream": stream
@@ -77,6 +77,5 @@ class DeepSeek:
             if getattr(chunk, 'usage', None):
                 input_tokens = chunk.usage.prompt_tokens
                 output_tokens = chunk.usage.completion_tokens
-                break
             yield chunk.model_dump_json(exclude_unset=True)
         self.credit.from_tokens(user_id, model, input_tokens, output_tokens)

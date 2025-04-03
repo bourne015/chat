@@ -85,7 +85,6 @@ class GPT:
             if not chunk.choices and getattr(chunk, 'usage', None):
                 input_tokens = chunk.usage.prompt_tokens
                 output_tokens = chunk.usage.completion_tokens
-                break
             yield chunk.model_dump_json(exclude_unset=True)
         self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
 

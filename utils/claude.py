@@ -3,13 +3,34 @@ import tiktoken
 from retry import retry
 import httpx
 import base64
+import logging
+
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+    before_sleep_log,
+    RetryCallState
+)
+from pybreaker import CircuitBreaker
 
 from core.config import settings
 from .credit import Credit
-from utils import log
+
+log = logging.getLogger(__name__)
 
 
-log = log.Logger(__name__, clevel=log.logging.DEBUG)
+def is_retryable_error(e: Exception):
+    return isinstance(e, (
+        httpx.ConnectTimeout,
+        httpx.ReadTimeout,
+        httpx.WriteTimeout,
+        httpx.RemoteProtocolError,
+        httpx.ConnectError
+    ))
+
+
 
 class Claude:
     '''
@@ -24,11 +45,29 @@ class Claude:
 
     def __init__(self) -> None:
         self.model = self.supported_models[0]
-        self.client = anthropic.AsyncAnthropic(api_key=settings.claude_key)
+        if not hasattr(self, "_client"):
+            self._client = anthropic.AsyncAnthropic(
+                api_key=settings.claude_key,
+                timeout=httpx.Timeout(
+                    connect=10.0,  # connection timeout
+                    read=10.0,     # read timeout
+                    write=10.0,    # write timeout
+                    pool=5.0       # connection pool timeout
+                ),
+            )
         self.credit = Credit()
         print("claude init: ", self.model)
 
-    @retry(tries=3, delay=1, backoff=1)
+    @property
+    def client(self):
+        return self._client
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=30),
+        retry=retry_if_exception_type(is_retryable_error),
+        #before_sleep=before_sleep_log(log, log.logging.WARNING)
+    )
     async def ask(self, user_id, prompt, model, stream = False):
         '''
         question without context
@@ -51,7 +90,17 @@ class Claude:
                 user_id, model, input_tokens, output_tokens)
         return response.content[0].text
 
-    @retry(tries=3, delay=1, backoff=1)
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=30),
+        retry=retry_if_exception_type(is_retryable_error),
+        #before_sleep=before_sleep_log(log, log.logging.WARNING)
+    )
+    @CircuitBreaker(
+        fail_max=3,
+        reset_timeout=20,
+        exclude=[httpx.HTTPStatusError]
+    )
     async def completions(self, user_id, chat_completion):
         '''
         question with context
@@ -100,23 +149,26 @@ class Claude:
             params["temperature"] = min(chat_completion.temperature, 1.0)
             log.debug(f"\033[31mtemperature: {chat_completion.temperature}\033[0m")
         # with self.client.messages.stream(
-        resp = await self.client.messages.create(**params)
-        async for x in resp:
-            if getattr(x, 'usage', None):
-                input_tokens = getattr(x.usage, 'input_tokens', 0)
-                output_tokens = getattr(x.usage, 'output_tokens', 0)
-                self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
-            yield x.model_dump_json(exclude_unset=True)
-        #as stream:
-        #    for chunk in stream:
-        #        yield chunk.model_dump_json(exclude_unset=True)
+        resp = None
+        try:
+            resp = await self.client.messages.create(
+                **params,
+                timeout=httpx.Timeout(30.0),
+            )
+            async for x in resp:
+                if getattr(x, 'usage', None):
+                    input_tokens = getattr(x.usage, 'input_tokens', 0)
+                    output_tokens = getattr(x.usage, 'output_tokens', 0)
+                    self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
+                yield x.model_dump_json(exclude_unset=True)
+        except Exception as e:
+            log.error(f"API error: {e}")
+            raise
+        finally:
+            if resp:
+                await resp.close()
 
-        #message = stream.get_final_message()
-        #if getattr(message, 'usage', None):
-        #    input_tokens = getattr(message.usage, 'input_tokens', 0)
-        #    output_tokens = getattr(message.usage, 'output_tokens', 0)
-        #self.credit.from_tokens(user_id, model, input_tokens, output_tokens)
- 
+
 
     def num_tokens_from_messages(self, messages, model="claude-3-haiku-20240307"):
         """
