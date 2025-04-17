@@ -76,7 +76,7 @@ class GPT:
             params["tools"] = tools
         if (chat_completion.temperature != None and
             0 <= chat_completion.temperature <= 2.0 and
-            model not in ["o3-mini", "o1-mini"]):
+            not model.startswith("o")):
             # greater than 1.2 will generate random characters
             params["temperature"] = min(chat_completion.temperature, 1.15)
             log.debug(f"\033[31mtemperature: {chat_completion.temperature}\033[0m")
