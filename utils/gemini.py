@@ -40,12 +40,12 @@ class Gemini:
                 if "inline_data" in _pt and _pt['inline_data']['data'].startswith('http'):
                     image = httpx.get(_pt['inline_data']['data'])
                     # _pt['inline_data']['data'] = base64.standard_b64encode(image.content).decode('utf-8')
-                    msg['parts'][i] = types.Part.from_bytes(image.content, _pt['inline_data']['mime_type'])
+                    msg['parts'][i] = types.Part.from_bytes(data=image.content, mime_type=_pt['inline_data']['mime_type'])
                 if "file_data" in _pt:
                     file_url = _pt["file_data"]["file_uri"]
                     doc_data = io.BytesIO(httpx.get(file_url).content)
                     myfile = await self.client.aio.files.upload(
-                        path=doc_data,
+                        file=doc_data,
                         config=dict(mime_type=_pt["file_data"]["mime_type"])
                     )
                     _pt['file_data']['file_uri'] = myfile.uri
@@ -76,6 +76,9 @@ class Gemini:
                 #tools.append(types.Tool(google_search=types.GoogleSearch()))
         if functions:
             tools.append(types.Tool(function_declarations=functions))
+        if model == "gemini-2.0-flash-exp-image-generation":
+            config["response_modalities"] = ['TEXT', 'IMAGE']
+            tools = None
         if tools:
             config["tools"] = tools
         if (chat_completion.temperature != None and
