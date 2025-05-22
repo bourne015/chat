@@ -1,17 +1,27 @@
 from datetime import datetime, timedelta
 from typing import Any, List
 
+import jwt
 from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status
 from alibabacloud_sts20150401.client import Client as Sts20150401Client
 from alibabacloud_tea_openapi import models as open_api_models
 from alibabacloud_sts20150401 import models as sts_20150401_models
 from alibabacloud_tea_util import models as util_models
 from alibabacloud_tea_util.client import Client as UtilClient
 
+from api.deps import db_client
 from core.config import settings
 from utils import log
 
+
+SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 43200 # 30days
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -20,6 +30,25 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        user_id: int = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except Exception as e:
+        raise credentials_exception
+    user = db_client.user.get_user_by_id(user_id)
+    if user is None:
+        raise credentials_exception
+    return user
 
 
 class OSS:

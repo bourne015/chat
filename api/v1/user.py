@@ -4,14 +4,26 @@ from fastapi import APIRouter, Path, Body, Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
+import jwt
+from datetime import datetime, timedelta
 
 from utils import log
 from api.deps import db_client
-from core.security import get_password_hash, verify_password, oss
+from core.security import * #get_password_hash, verify_password, oss
 
 router = APIRouter()
 log = log.Logger(__name__, clevel=log.logging.DEBUG)
 
+
+def create_access_token(data: dict, expires_delta: timedelta|None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 class UpdatePassword(BaseModel):
     current_password: str
@@ -75,6 +87,10 @@ async def user_get(
         return JSONResponse(status_code=200, content={"result": "user not found"})
     if not verify_password(form_data.password, db_user.pwd):
         return JSONResponse(status_code=200, content={"result": "wrong password"})
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(db_user.id)}, expires_delta=access_token_expires
+    )
     res = {
         "result": "success",
         "id": db_user.id,
@@ -87,6 +103,7 @@ async def user_get(
         "credit": db_user.credit,
         "updated_at": db_user.updated_at,
         "settings": db_user.settings,
+		"access_token": access_token,
     }
     return JSONResponse(status_code=200, content=res)
 
