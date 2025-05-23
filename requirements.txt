@@ -82,8 +82,8 @@ rsa==4.9
 sniffio==1.3.0
 sounddevice==0.5.1
 soupsieve==2.6
-SQLAlchemy==2.0.29
-sqlmodel==0.0.16
+SQLAlchemy==2.0.40
+sqlmodel==0.0.24
 sse-starlette==1.6.5
 starlette==0.45.3
 tenacity==9.0.0

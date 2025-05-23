@@ -4,7 +4,9 @@ import time
 from dictns import Namespace
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, Float, ForeignKey, JSON, Boolean, Text
-
+from sqlmodel import Field, Relationship, SQLModel
+from typing import Optional, Dict
+import uuid
 
 Base = declarative_base()
 
@@ -83,6 +85,21 @@ class Bot(Base):
     updated_at = Column(Integer(), default=None)
 
 
+class McpServer(Base):
+    __tablename__ = 'mcp'
+    id = Column(String, primary_key=True, default=uuid.uuid4, index=True, unique=True, nullable=False)
+    name = Column(String, nullable=False)
+    command = Column(String, nullable=False)
+    args = Column(String, nullable=False)
+    custom_environment = Column(JSON, default=dict)
+    owner_id = Column(Integer, nullable=False)
+    owner_name = Column(String, nullable=False)
+    is_public = Column(Boolean, default=False)
+    description = Column(String, nullable=True)
+    created_at = Column(Integer, nullable=False)
+    updated_at = Column(Integer, nullable=False)
+
+
 class Shares(Base):
     '''
     shared informations
@@ -90,3 +107,4 @@ class Shares(Base):
     __tablename__ = 'Shares'
     id = Column(Integer(), primary_key=True, index=True)
     bot_updated = Column(Integer(), comment="latest bots update time")
+    mcp_updated = Column(Integer(), comment="latest mcp server update time")

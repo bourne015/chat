@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from . import text, user, chatdb, bot, assistant, tools
+from . import text, user, chatdb, bot, assistant, tools, mcp
 
 
 api_router = APIRouter()
@@ -10,3 +10,4 @@ api_router.include_router(chatdb.router, tags=["Chat"])
 api_router.include_router(bot.router, tags=["Bot"])
 api_router.include_router(assistant.router, tags=["Assistant"])
 api_router.include_router(tools.router, tags=["Tools"])
+api_router.include_router(mcp.router, tags=["MCP"])

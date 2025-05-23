@@ -23,7 +23,8 @@ class SharesDBConnectorComponent(DBConnectorComponent):
         def thd(conn):
             try:
                 shares = self.tbl(
-                    bot_updated=kwargs.get("bot_updated"),
+                    bot_updated=kwargs.get("bot_updated", None),
+                    mcp_updated=kwargs.get("mcp_updated", None),
                 )
                 conn.add(shares)
                 conn.commit()
@@ -35,7 +36,7 @@ class SharesDBConnectorComponent(DBConnectorComponent):
 
     def update_shares_by_id(self, shares_id, **kwargs):
         def thd(conn):
-            update_columns = ["bot_updated"]
+            update_columns = ["bot_updated", "mcp_updated"]
             shares = conn.query(self.tbl).filter(
                 self.tbl.id == shares_id).first()
             for col in update_columns:
