@@ -76,7 +76,7 @@ class Gemini:
                 #tools.append(types.Tool(google_search=types.GoogleSearch()))
         if functions:
             tools.append(types.Tool(function_declarations=functions))
-        if model == "gemini-2.0-flash-exp-image-generation":
+        if model == "gemini-2.0-flash-preview-image-generation":
             config["response_modalities"] = ['TEXT', 'IMAGE']
             tools = None
         if tools:
