@@ -108,6 +108,11 @@ async def user_get(
     return JSONResponse(status_code=200, content=res)
 
 
+@router.get("/user/me", name="get user info by token")
+async def read_users_me(current_user = Depends(get_current_user)) -> Any:
+    return JSONResponse(status_code=200, content=current_user)
+
+
 @router.post("/user/{user_id}", name="edit user")
 async def user_edit(user_id: int, user: UserData) -> Any:
     try:
