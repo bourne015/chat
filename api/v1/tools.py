@@ -6,17 +6,18 @@ import json
 import asyncio
 import requests
 from bs4 import BeautifulSoup
+import logging
 
-from utils import log
 from core.config import settings
 
 
 router = APIRouter()
-log = log.Logger(__name__, clevel=log.logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 @router.get("/google_search/")
 async def search_google(query: str, num_results: int = 10):
+    log.info("tool: google search")
     endpoint = 'https://www.googleapis.com/customsearch/v1'
 
     params = {
@@ -50,7 +51,7 @@ async def fetch_webpage(url: str):
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
-        print("fetch: ", url)
+        log.info(f"tool: fetch page: {url}")
         response = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -60,7 +61,7 @@ async def fetch_webpage(url: str):
         # get text content
         text = soup.get_text(separator="\n", strip=True)
         # limit length
-        max_length = 10240
+        max_length = 20480
         if len(text) > max_length:
             text = text[:max_length] + "...(内容已截断)"
 
