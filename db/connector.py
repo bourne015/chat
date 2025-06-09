@@ -12,6 +12,7 @@ from db.chat import ChatDBConnectorComponent
 from db.bot import BotDBConnectorComponent
 from db.shares import SharesDBConnectorComponent
 from db.mcp import MCPDBConnectorComponent
+from db.order import OrderDBConnectorComponent
 
 
 @contextmanager
@@ -51,6 +52,7 @@ class DBClient():
         self.bot = BotDBConnectorComponent(self)
         self.shares = SharesDBConnectorComponent(self)
         self.mcp = MCPDBConnectorComponent(self)
+        self.order = OrderDBConnectorComponent(self)
 
     def _init_session(self, connect_args):
         if connect_args:

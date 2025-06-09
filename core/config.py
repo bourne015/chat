@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     google_search_key: str
     google_search_cx: str
 
+    web_name: str
+    order_pid: str
+    order_pkey: str
+    order_notify_url: str
+    order_return_url: str
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'

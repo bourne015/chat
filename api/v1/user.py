@@ -1,15 +1,18 @@
 import time
 from typing import Any, List, Dict, Optional, Annotated
-from fastapi import APIRouter, Path, Body, Depends
+from fastapi import APIRouter, Path, Body, Depends, Query, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 import jwt
 from datetime import datetime, timedelta
+import hashlib
+import random
 
 from utils import log
 from api.deps import db_client
 from core.security import * #get_password_hash, verify_password, oss
+from core.config import settings
 
 router = APIRouter()
 log = log.Logger(__name__, clevel=log.logging.DEBUG)
@@ -237,3 +240,100 @@ async def user_edit(user_id: int, account: float) -> Any:
         log.debug(f"edit user error:{err}")
         return JSONResponse(status_code=500, content={"result": str(err)})
     return JSONResponse(status_code=200, content={"result": "success"})
+
+
+@router.get("/user/charge/{user_id}/new_order", name="create order")
+async def new_order(
+        user_id: int,
+        name: str = Query(...),
+        type: str = Query(...),  # 'alipay'/'wxpay'
+        money: str = Query(...),
+        current_user = Depends(get_current_user),
+    ):
+    try:
+        out_trade_no = str(current_user["id"]) + time.strftime('%Y%m%d') + str(random.randint(1000, 9999))
+        params = {
+            "money": format_val(money),
+            "name": name,
+            "notify_url": settings.order_notify_url,
+            "out_trade_no": out_trade_no,
+            "pid": settings.order_pid,
+            "return_url": settings.order_return_url,
+            "type": type,
+        }
+        
+        sign = get_zpay_sign(params, settings.order_pkey)
+        params.update({
+            "sign": sign,
+            "sign_type": "MD5",
+        })
+        pay_url = 'https://z-pay.cn/submit.php?' + '&'.join(f"{k}={v}" for k, v in params.items())
+        created_at = int(time.time())
+        data = {
+            "user_id": current_user["id"],
+            "name": name,
+            "out_trade_no": out_trade_no,
+            "type": type,
+            "pid": settings.order_pid,
+            "money": format_val(money),
+            "status": 0,
+            "created_at": created_at,
+            "updated_at": created_at,
+        }
+        db_client.order.add_new_order(**data)
+        return JSONResponse(status_code=200, content={"url": pay_url})
+    except Exception as err:
+        log.error(f"failed to get pay url: {err}")
+        raise HTTPException(status_code=500, detail='Order Creation Failed')
+
+
+@router.get("/user/charge/notify", name="notify charge result")
+async def charge_notify(request: Request) -> str:
+    try:
+        params = dict(request.query_params)
+        money = params.get("money")
+        name = params.get("name")
+        out_trade_no = params.get("out_trade_no")
+        pid = params.get("pid")
+        sign = params.get("sign")
+        sign_type = params.get("sign_type")
+        trade_no = params.get("trade_no")
+        trade_status = params.get("trade_status")
+        type = params.get("type")
+    
+        od = db_client.order.get_order_by_out_trade_no(out_trade_no)
+        if od.status == 1:
+            #this is a repeated notify
+            log.error(f"notify repeated")
+            return Response(content="success", media_type="text/plain")
+
+        calc_sign = get_zpay_sign(params, settings.order_pkey)
+        if sign != calc_sign:
+            log.error(f"sign check failed")
+            return Response(content="sign error", media_type="text/plain")
+
+        if format_val(od.money) != format_val(money):
+            log.error(f"money check failed")
+            return Response(content="money error", media_type="text/plain")
+        if trade_status == "TRADE_SUCCESS":
+            user = db_client.user.get_user_by_id(od.user_id)
+            db_client.user.update_user_by_id(user.id, credit=user.credit+float(money))
+            db_client.order.update_order_by_id(od.id, status=1)
+        return Response(content="success", media_type="text/plain")
+    except Exception as err:
+        log.error(f"failed for notify recheck: {err}")
+    return Response(content="failed", media_type="text/plain")
+
+def get_zpay_sign(params: dict, key: str) -> str:
+    param_tuples = [(k, v) for k, v in params.items() if k not in ['sign', 'sign_type'] and v != '' and v is not None]
+    param_tuples.sort(key=lambda x: x[0])
+    sign_src = '&'.join([f"{k}={v}" for k, v in param_tuples]) + key
+    
+    return hashlib.md5(sign_src.encode("utf-8")).hexdigest()
+
+def format_val(value):
+    try:
+        num = float(value)
+        return f"{num:.2f}"
+    except (ValueError, TypeError):
+        return value

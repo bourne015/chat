@@ -100,6 +100,22 @@ class McpServer(Base):
     updated_at = Column(Integer, nullable=False)
 
 
+
+class Order(Base):
+    __tablename__ = 'order'
+    id = Column(Integer(), primary_key=True, index=True)
+    user_id = Column(Integer(), ForeignKey(User.id), nullable=True)
+    name = Column(String, comment="product name", nullable=False)
+    out_trade_no = Column(String, comment="product trade number", nullable=False)
+    type = Column(String, comment="trade type(alipay|wxpay)", nullable=False)
+    pid = Column(String, comment="product id",nullable=False)
+    money = Column(String, comment="trade money", nullable=False)
+    status = Column(Integer(), comment="trade status(1:success, 0:unpaid)",nullable=False)
+    param = Column(String, nullable=True)
+    created_at = Column(Integer(), nullable=False)
+    updated_at = Column(Integer(), nullable=False)
+
+
 class Shares(Base):
     '''
     shared informations
